@@ -1,0 +1,79 @@
+Line 2: * Member 1 â€” Frontend: Main JS â€” Dark mode, toast notifications, weather fetch, Chart.js helpers
+Line 8: // â”€â”€â”€ Dark Mode Toggle with Smooth Animations â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+Line 26: iconEl.textContent = isDark ? 'â˜€ï¸' : 'ðŸŒ™';
+Line 39: // â”€â”€â”€ Toast Notification System â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+Line 44: <span class="text-xl">${type === 'success' ? 'âœ…' : type === 'error' ? 'âŒ' : 'â„¹ï¸'}</span>
+Line 51: // â”€â”€â”€ Geolocation & Weather Fetch with Auto-Detection & Permission Persistence â”€â”€â”€â”€
+Line 213: console.warn('%c[GPS] âŒ REJECTED: accuracy > 1000m', 'color: #FF6600; font-weight: bold;', {
+Line 219: ? 'à¤•à¤® à¤œà¥€à¤ªà¥€à¤à¤¸ à¤¸à¤Ÿà¥€à¤•à¤¤à¤¾à¥¤ à¤•à¥ƒà¤ªà¤¯à¤¾ à¤¸à¤Ÿà¥€à¤• à¤¸à¥à¤¥à¤¾à¤¨/GPS à¤¸à¤•à¥à¤·à¤® à¤•à¤°à¥‡à¤‚à¥¤'
+Line 230: console.log('%c[GPS] âœ“ acCEPTED: accuracy within threshold', 'color: #00AA00;');
+Line 237: console.error('%c[GPS] âŒ Error getting position:', 'color: #FF0000; font-weight: bold;', {
+Line 246: ? 'à¤¸à¥à¤¥à¤¾à¤¨ à¤ªà¤¹à¥à¤‚à¤š à¤µà¤¿à¤«à¤² à¤°à¤¹à¥€à¥¤ à¤•à¥ƒà¤ªà¤¯à¤¾ à¤®à¥ˆà¤¨à¥à¤¯à¥à¤…à¤² à¤°à¥‚à¤ª à¤¸à¥‡ à¤­à¤°à¥‡à¤‚à¥¤'
+Line 297: console.warn('%c[GPS] âŒ REJECTED: First-time accuracy > 1000m', 'color: #FF6600; font-weight: bold;', {
+Line 301: ? 'à¤•à¤® à¤œà¥€à¤ªà¥€à¤à¤¸ à¤¸à¤Ÿà¥€à¤•à¤¤à¤¾à¥¤ à¤•à¥ƒà¤ªà¤¯à¤¾ à¤¸à¤Ÿà¥€à¤• à¤¸à¥à¤¥à¤¾à¤¨/GPS à¤¸à¤•à¥à¤·à¤® à¤•à¤°à¥‡à¤‚à¥¤'
+Line 310: console.log('%c[GPS] âœ“ acCEPTED: First-time accuracy within threshold', 'color: #00AA00;');
+Line 317: console.error('%c[GPS] âŒ First-time error:', 'color: #FF0000; font-weight: bold;', {
+Line 351: btn.innerHTML = `<span class="animate-spin inline-block mr-2">â³</span> ${document.documentElement.lang === 'hi' ? 'à¤–à¥‹à¤œ à¤•à¥€ à¤œà¤¾ à¤°à¤¹à¥€ à¤¹à¥ˆ...' : 'Fetching...'}`;
+Line 353: if (statusEl) statusEl.textContent = document.documentElement.lang === 'hi' ? 'à¤¸à¥à¤¥à¤¾à¤¨ à¤•à¤¾ à¤ªà¤¤à¤¾ à¤²à¤—à¤¾à¤¯à¤¾ à¤œà¤¾ à¤°à¤¹à¤¾ à¤¹à¥ˆ...' : 'Detecting location...';
+Line 371: console.warn('%c[GPS] âŒ REJECTED: Manual location accuracy > 1000m', 'color: #FF6600; font-weight: bold;', {
+Line 376: btn.innerHTML = document.documentElement.lang === 'hi' ? `ðŸ“¡ à¤®à¥‡à¤°à¥‡ à¤¸à¥à¤¥à¤¾à¤¨ à¤•à¤¾ à¤®à¥Œà¤¸à¤® à¤ªà¥à¤°à¤¾à¤ªà¥à¤¤ à¤•à¤°à¥‡à¤‚` : `ðŸ“¡ Fetch My Location Weather`;
+Line 380: ? 'à¤•à¤® à¤œà¥€à¤ªà¥€à¤à¤¸ à¤¸à¤Ÿà¥€à¤•à¤¤à¤¾à¥¤ à¤•à¥ƒà¤ªà¤¯à¤¾ à¤¸à¤Ÿà¥€à¤• à¤¸à¥à¤¥à¤¾à¤¨/GPS à¤¸à¤•à¥à¤·à¤® à¤•à¤°à¥‡à¤‚à¥¤'
+Line 386: console.log('%c[GPS] âœ“ acCEPTED: Manual location accuracy within threshold', 'color: #00AA00;');
+Line 392: console.error('%c[GPS] âŒ Manual location error:', 'color: #FF0000; font-weight: bold;', {
+Line 398: btn.innerHTML = document.documentElement.lang === 'hi' ? `ðŸ“¡ à¤®à¥‡à¤°à¥‡ à¤¸à¥à¤¥à¤¾à¤¨ à¤•à¤¾ à¤®à¥Œà¤¸à¤® à¤ªà¥à¤°à¤¾à¤ªà¥à¤¤ à¤•à¤°à¥‡à¤‚` : `ðŸ“¡ Fetch My Location Weather`;
+Line 405: const msg = document.documentElement.lang === 'hi' ? 'à¤¸à¥à¤¥à¤¾à¤¨ à¤ªà¤¹à¥à¤‚à¤š à¤…à¤¸à¥à¤µà¥€à¤•à¤¾à¤° à¤•à¤° à¤¦à¥€ à¤—à¤ˆà¥¤ à¤•à¥ƒà¤ªà¤¯à¤¾ à¤®à¥ˆà¤¨à¥à¤¯à¥à¤…à¤² à¤°à¥‚à¤ª à¤¸à¥‡ à¤¦à¤°à¥à¤œ à¤•à¤°à¥‡à¤‚à¥¤' : 'Location access denied. Please enter city manually.';
+Line 408: const msg = document.documentElement.lang === 'hi' ? 'à¤¸à¥à¤¥à¤¾à¤¨ à¤ªà¤¹à¥à¤‚à¤š à¤µà¤¿à¤«à¤² à¤°à¤¹à¥€à¥¤ à¤•à¥ƒà¤ªà¤¯à¤¾ à¤®à¥ˆà¤¨à¥à¤¯à¥à¤…à¤² à¤°à¥‚à¤ª à¤¸à¥‡ à¤­à¤°à¥‡à¤‚à¥¤' : 'Location access failed. Please fill weather manually.';
+Line 461: // â”€â”€â”€ Animated Counters â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+Line 481: // â”€â”€â”€ Crop Suggestions Live Preview â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+Line 500: container.innerHTML = `<p class="text-sm text-gray-500">${document.documentElement.lang === 'hi' ? 'à¤‡à¤¨ à¤ªà¤°à¤¿à¤¸à¥à¤¥à¤¿à¤¤à¤¿à¤¯à¥‹à¤‚ à¤•à¥‡ à¤²à¤¿à¤ à¤•à¥‹à¤ˆ à¤…à¤¤à¥à¤¯à¤§à¤¿à¤• à¤‰à¤ªà¤¯à¥à¤•à¥à¤¤ à¤«à¤¸à¤² à¤¨à¤¹à¥€à¤‚ à¤®à¤¿à¤²à¥€à¥¤' : 'No highly suitable crops found for these conditions.'}</p>`;
+Line 506: ðŸŒ± ${c.translated_name || c.name} <span class="opacity-70">(${c.match_score}%)</span>
+Line 513: // â”€â”€â”€ Auto-attach weather fetch on form and auto-detect on page load â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+Line 532: iconEl.textContent = document.documentElement.classList.contains('dark') ? 'â˜€ï¸' : 'ðŸŒ™';
+Line 535: // â”€â”€â”€ City Search Autocomplete â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+Line 581: const loadingMsg = isHi ? 'à¤¸à¥à¤¥à¤¾à¤¨ à¤–à¥‹à¤œà¥‡ à¤œà¤¾ à¤°à¤¹à¥‡ à¤¹à¥ˆà¤‚...' : 'Searching locations...';
+Line 584: <span class="animate-spin text-base">â³</span> ${loadingMsg}
+Line 609: const noResultsMsg = isHi ? 'à¤•à¥‹à¤ˆ à¤¸à¥à¤¥à¤¾à¤¨ à¤¨à¤¹à¥€à¤‚ à¤®à¤¿à¤²à¤¾' : 'No locations found';
+Line 625: ðŸ“ ${label}
+Line 637: const errorMsg = isHi ? 'à¤–à¥‹à¤œ à¤µà¤¿à¤«à¤² à¤°à¤¹à¥€' : 'Search failed';
+Line 689: // â”€â”€â”€ Core weather fetch by coordinates with deduplication â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+Line 701: btn.innerHTML = isHi ? `ðŸ“¡ à¤®à¥‡à¤°à¥‡ à¤¸à¥à¤¥à¤¾à¤¨ à¤•à¤¾ à¤®à¥Œà¤¸à¤® à¤ªà¥à¤°à¤¾à¤ªà¥à¤¤ à¤•à¤°à¥‡à¤‚` : `ðŸ“¡ Fetch My Location Weather`;
+Line 707: // === FLOW START: GPS â†’ Reverse Geocoding â†’ Weather API ===
+Line 708: console.log('%câ•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•', 'color: #00AA00; font-weight: bold;');
+Line 709: console.log('%c[FLOW] GPS â†’ Reverse Geocoding â†’ Weather API â†’ Rendering', 'color: #00AA00; font-weight: bold; font-size: 12px;');
+Line 710: console.log('%câ•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•', 'color: #00AA00; font-weight: bold;');
+Line 724: btn.innerHTML = `<span class="animate-spin inline-block mr-2">â³</span> Fetching...`;
+Line 739: temperature: data.temperature + '°C',
+Line 786: 'clear sky': 'à¤¸à¤¾à¤« à¤®à¥Œà¤¸à¤®',
+Line 787: 'clear': 'à¤¸à¤¾à¤« à¤®à¥Œà¤¸à¤®',
+Line 788: 'clouds': 'à¤¬à¤¾à¤¦à¤²',
+Line 789: 'cloudy': 'à¤¬à¤¾à¤¦à¤²',
+Line 790: 'overcast': 'à¤˜à¤¨à¥‡ à¤¬à¤¾à¤¦à¤²',
+Line 791: 'rain': 'à¤¬à¤¾à¤°à¤¿à¤¶',
+Line 792: 'rainy': 'à¤¬à¤¾à¤°à¤¿à¤¶',
+Line 793: 'drizzle': 'à¤¬à¥‚à¤‚à¤¦à¤¾à¤¬à¤¾à¤‚à¤¦à¥€',
+Line 794: 'snow': 'à¤¬à¤°à¥à¤«à¤¬à¤¾à¤°à¥€',
+Line 795: 'snowy': 'à¤¬à¤°à¥à¤«à¤¬à¤¾à¤°à¥€',
+Line 796: 'rain showers': 'à¤¬à¥‹à¤›à¤¾à¤°à¥‡à¤‚',
+Line 797: 'showers': 'à¤¬à¥‹à¤›à¤¾à¤°à¥‡à¤‚',
+Line 798: 'thunderstorm': 'à¤†à¤‚à¤§à¥€',
+Line 799: 'thunderstorms': 'à¤†à¤‚à¤§à¥€',
+Line 800: 'mist': 'à¤§à¥à¤‚à¤§',
+Line 801: 'fog': 'à¤•à¥‹à¤¹à¤°à¤¾',
+Line 802: 'foggy': 'à¤•à¥‹à¤¹à¤°à¤¾',
+Line 803: 'variable': 'à¤ªà¤°à¤¿à¤µà¤°à¥à¤¤à¤¨à¥€à¤¯',
+Line 804: 'partly cloudy': 'à¤†à¤‚à¤¶à¤¿à¤• à¤°à¥‚à¤ª à¤¸à¥‡ à¤¬à¤¾à¤¦à¤²',
+Line 805: 'mainly clear': 'à¤®à¥à¤–à¥à¤¯à¤¤à¤ƒ à¤¸à¤¾à¤« à¤®à¥Œà¤¸à¤®',
+Line 810: const windUnit = isHi ? 'à¤•à¤¿à¤®à¥€/à¤˜à¤‚à¤Ÿà¤¾' : 'km/h';
+Line 811: const defaultLoc = isHi ? 'à¤†à¤ªà¤•à¤¾ à¤¸à¥à¤¥à¤¾à¤¨' : 'Your Location';
+Line 812: const loadedMsg = isHi ? `${data.city || 'à¤šà¤¯à¤¨à¤¿à¤¤ à¤¸à¥à¤¥à¤¾à¤¨'} à¤•à¥‡ à¤²à¤¿à¤ à¤®à¥Œà¤¸à¤® à¤²à¥‹à¤¡ à¤•à¤¿à¤¯à¤¾ à¤—à¤¯à¤¾!` : `Weather loaded for ${data.city || 'selected location'}!`;
+Line 818: <p class="text-xs font-semibold text-green-800 dark:text-green-300 mb-2">${isHi ? 'à¤…à¤—à¤²à¥‡ 5 à¤˜à¤‚à¤Ÿà¥‡' : 'Next 5 Hours'}</p>
+Line 823: <span class="text-sm font-bold text-gray-800 dark:text-gray-200">${Math.round(h.temp)}Â°</span>
+Line 836: <p class="font-bold text-green-900 dark:text-green-100 text-base">ðŸ“ ${data.city || defaultLoc}</p>
+Line 840: <p class="text-2xl font-bold text-green-700 dark:text-green-300">${Math.round(data.temperature)}Â°</p>
+Line 841: <p class="text-[10px] text-green-600 dark:text-green-400">${isHi ? 'à¤…à¤¨à¥à¤­à¤µ' : 'Feels like'} ${Math.round(data.apparent_temperature)}Â°</p>
+Line 847: <span class="text-gray-400 text-[10px] uppercase tracking-wider mb-1">${isHi ? 'à¤¨à¤®à¥€' : 'Humidity'}</span>
+Line 851: <span class="text-gray-400 text-[10px] uppercase tracking-wider mb-1">${isHi ? 'à¤¹à¤µà¤¾' : 'Wind'}</span>
+Line 859: <span class="text-gray-400 text-[10px] uppercase tracking-wider mb-1">${isHi ? 'à¤¦à¥ƒà¤¶à¥à¤¯à¤¤à¤¾' : 'Vis.'}</span>
+Line 871: const errorMsg = document.documentElement.lang?.startsWith('hi') ? 'à¤®à¥Œà¤¸à¤® à¤²à¥‹à¤¡ à¤¨à¤¹à¥€à¤‚ à¤•à¤¿à¤¯à¤¾ à¤œà¤¾ à¤¸à¤•à¤¾à¥¤' : 'Could not load weather.';
+Line 875: const netErrorMsg = document.documentElement.lang?.startsWith('hi') ? 'à¤®à¥Œà¤¸à¤® à¤ªà¥à¤°à¤¾à¤ªà¥à¤¤ à¤•à¤°à¤¨à¥‡ à¤®à¥‡à¤‚ à¤¨à¥‡à¤Ÿà¤µà¤°à¥à¤• à¤¤à¥à¤°à¥à¤Ÿà¤¿à¥¤' : 'Network error fetching weather.';
+Line 881: btn.innerHTML = isHi ? `ðŸ“¡ à¤®à¥‡à¤°à¥‡ à¤¸à¥à¤¥à¤¾à¤¨ à¤•à¤¾ à¤®à¥Œà¤¸à¤® à¤ªà¥à¤°à¤¾à¤ªà¥à¤¤ à¤•à¤°à¥‡à¤‚` : `ðŸ“¡ Fetch My Location Weather`;
