@@ -39,6 +39,7 @@ return [
         'key' => env('GEMINI_API_KEY'),
     ],
 
+<<<<<<< HEAD
     // ✅ NEW: Google OAuth
     'google' => [
         'client_id'     => env('GOOGLE_CLIENT_ID'),
@@ -50,4 +51,6 @@ return [
         'key' => env('GOOGLE_MAPS_API_KEY'),
     ],
 
+=======
+>>>>>>> ad0ccee2af44b30e9d0ff7fdf2eb6cb6db219755
 ];

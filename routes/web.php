@@ -2,7 +2,10 @@
 
 use App\Http\Controllers\AdminController;
 use App\Http\Controllers\AuthController;
+<<<<<<< HEAD
 use App\Http\Controllers\ContactController;
+=======
+>>>>>>> ad0ccee2af44b30e9d0ff7fdf2eb6cb6db219755
 use App\Http\Controllers\PageController;
 use App\Http\Controllers\PredictionController;
 use App\Http\Controllers\ProfileController;
@@ -10,13 +13,17 @@ use App\Http\Middleware\AdminMiddleware;
 use App\Models\WeatherLog;
 use App\Services\WeatherService;
 use Illuminate\Http\Request;
+<<<<<<< HEAD
 use Illuminate\Support\Facades\Http;
 use Illuminate\Support\Facades\Log;
+=======
+>>>>>>> ad0ccee2af44b30e9d0ff7fdf2eb6cb6db219755
 use Illuminate\Support\Facades\Route;
 
 // ─── Basic Routes & Named Routes ────────────────────────────────────
 
 Route::get('/', [PageController::class, 'home'])->name('home');
+<<<<<<< HEAD
 Route::get('/about', [PageController::class, 'about'])->name('about');
 // Informational & Support Pages (simple, static, production-ready)
 Route::get('/privacy', [PageController::class, 'privacy'])->name('privacy');
@@ -27,6 +34,8 @@ Route::get('/docs', [PageController::class, 'docs'])->name('docs');
 Route::get('/report', [ContactController::class, 'show'])->name('report');
 Route::get('/contact', [ContactController::class, 'show'])->name('contact');
 Route::post('/contact', [ContactController::class, 'store'])->name('contact.store');
+=======
+>>>>>>> ad0ccee2af44b30e9d0ff7fdf2eb6cb6db219755
 
 // ───  Locale switching route ──────────────────────────────────────────
 Route::get('/locale/{locale}', [PageController::class, 'setLocale'])->name('locale.set');
@@ -59,6 +68,7 @@ Route::middleware('auth')->group(function () {
             ->header('X-Data-Source', 'Open-Meteo');
     })->name('api.weather');
 
+<<<<<<< HEAD
     // Debug endpoint: returns raw provider and reverse-geocode responses for diagnostics
     Route::get('/api/debug-weather', function (Request $request) {
         $lat = $request->query('lat');
@@ -103,6 +113,8 @@ Route::middleware('auth')->group(function () {
         }
     })->name('api.debug_weather');
 
+=======
+>>>>>>> ad0ccee2af44b30e9d0ff7fdf2eb6cb6db219755
     Route::post('/api/user-location', function (Request $request) {
         $request->validate([
             'latitude' => 'required|numeric',
@@ -156,10 +168,13 @@ Route::prefix('admin')
         Route::delete('/users/{user}', [AdminController::class, 'destroyUser'])->name('users.destroy');
         Route::get('/predictions', [AdminController::class, 'predictions'])->name('predictions');
         Route::delete('/predictions/{prediction}', [AdminController::class, 'destroyPrediction'])->name('predictions.destroy');
+<<<<<<< HEAD
         Route::get('/tickets', [AdminController::class, 'ticketsIndex'])->name('tickets');
         Route::get('/tickets/{ticket}', [AdminController::class, 'showTicket'])->name('tickets.show');
         Route::patch('/tickets/{ticket}/resolve', [AdminController::class, 'resolveTicket'])->name('tickets.resolve');
         Route::patch('/tickets/{ticket}/status', [AdminController::class, 'updateTicketStatus'])->name('tickets.status');
+=======
+>>>>>>> ad0ccee2af44b30e9d0ff7fdf2eb6cb6db219755
     });
 
 // ─── Authentication Routes ────────────────────────────────────────────────────
@@ -168,6 +183,7 @@ Route::middleware('guest')->group(function () {
     Route::post('/login', [AuthController::class, 'login']);
     Route::get('/register', [AuthController::class, 'showRegister'])->name('register');
     Route::post('/register', [AuthController::class, 'register']);
+<<<<<<< HEAD
 
     // ✅ NEW: OTP verification routes
     Route::get('/login/otp', [AuthController::class, 'showOtp'])->name('otp.show');
@@ -179,4 +195,8 @@ Route::middleware('guest')->group(function () {
 Route::get('/auth/google', [AuthController::class, 'redirectToGoogle'])->name('auth.google');
 Route::get('/auth/google/callback', [AuthController::class, 'handleGoogleCallback'])->name('auth.google.callback');
 
+=======
+});
+
+>>>>>>> ad0ccee2af44b30e9d0ff7fdf2eb6cb6db219755
 Route::post('/logout', [AuthController::class, 'logout'])->name('logout')->middleware('auth');

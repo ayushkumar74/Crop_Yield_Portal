@@ -81,7 +81,11 @@ return [
     'predict_ai_powered' => 'AI-संचालित',
     'select_crop' => 'फसल चुनें',
     'temperature' => 'तापमान (°C)',
+<<<<<<< HEAD
     'rainfall' => 'क्षेत्र के लिए अनुमानित वार्षिक वर्षा (मिमी)',
+=======
+    'rainfall' => 'वार्षिक वर्षा (मिमी)',
+>>>>>>> ad0ccee2af44b30e9d0ff7fdf2eb6cb6db219755
     'humidity' => 'आर्द्रता (%)',
     'soil_ph' => 'मिट्टी पीएच',
     'fetch_weather' => 'मेरा स्थान उपयोग करें',

@@ -2,12 +2,16 @@
 
 namespace App\Http\Controllers;
 
+<<<<<<< HEAD
 use App\Mail\LoginOtpMail;
 use App\Models\LoginOtp;
+=======
+>>>>>>> ad0ccee2af44b30e9d0ff7fdf2eb6cb6db219755
 use App\Models\User;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Hash;
+<<<<<<< HEAD
 use Illuminate\Support\Facades\Mail;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Str;
@@ -16,11 +20,17 @@ use Laravel\Socialite\Facades\Socialite;
 class AuthController extends Controller
 {
     // ─── Show Login Page ──────────────────────────────────────────────────────
+=======
+
+class AuthController extends Controller
+{
+>>>>>>> ad0ccee2af44b30e9d0ff7fdf2eb6cb6db219755
     public function showLogin()
     {
         return view('auth.login');
     }
 
+<<<<<<< HEAD
     // ─── Step 1: Validate credentials → send OTP ─────────────────────────────
     public function login(Request $request)
     {
@@ -187,11 +197,33 @@ class AuthController extends Controller
     }
 
     // ─── Show Register Page ───────────────────────────────────────────────────
+=======
+    public function login(Request $request)
+    {
+        $credentials = $request->validate([
+            'email' => 'required|email',
+            'password' => 'required',
+        ]);
+
+        if (Auth::attempt($credentials)) {
+            $request->session()->regenerate();
+
+            // Always send users to Home after login to avoid auto-opening dashboard
+            return redirect()->route('home')->with('success', __('messages.auth_welcome_back'));
+        }
+
+        return back()->withErrors([
+            'email' => __('messages.auth_invalid_credentials'),
+        ])->onlyInput('email');
+    }
+
+>>>>>>> ad0ccee2af44b30e9d0ff7fdf2eb6cb6db219755
     public function showRegister()
     {
         return view('auth.register');
     }
 
+<<<<<<< HEAD
     // ─── Register (with strong password validation) ───────────────────────────
     public function register(Request $request)
     {
@@ -214,17 +246,36 @@ class AuthController extends Controller
         $user = User::create([
             'name'     => $validated['name'],
             'email'    => $validated['email'],
+=======
+    public function register(Request $request)
+    {
+        $validated = $request->validate([
+            'name' => 'required|string|max:255',
+            'email' => 'required|string|email|max:255|unique:users',
+            'password' => 'required|string|min:8|confirmed',
+        ]);
+
+        $user = User::create([
+            'name' => $validated['name'],
+            'email' => $validated['email'],
+>>>>>>> ad0ccee2af44b30e9d0ff7fdf2eb6cb6db219755
             'password' => Hash::make($validated['password']),
         ]);
 
         Auth::login($user);
 
+<<<<<<< HEAD
         Log::info('[REGISTER] New user registered: ' . $validated['email']);
 
         return redirect()->route('home')->with('success', __('messages.auth_register_success'));
     }
 
     // ─── Logout ───────────────────────────────────────────────────────────────
+=======
+        return redirect()->route('home')->with('success', __('messages.auth_register_success'));
+    }
+
+>>>>>>> ad0ccee2af44b30e9d0ff7fdf2eb6cb6db219755
     public function logout(Request $request)
     {
         Auth::logout();
@@ -233,6 +284,7 @@ class AuthController extends Controller
 
         return redirect('/')->with('success', __('messages.auth_logout_success'));
     }
+<<<<<<< HEAD
 
     // ─── Google OAuth: Redirect ───────────────────────────────────────────────
     public function redirectToGoogle()
@@ -279,3 +331,6 @@ class AuthController extends Controller
         return redirect()->route('home')->with('success', 'Welcome, ' . $user->name . '!');
     }
 }
+=======
+}
+>>>>>>> ad0ccee2af44b30e9d0ff7fdf2eb6cb6db219755

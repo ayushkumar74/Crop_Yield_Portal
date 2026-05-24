@@ -6,21 +6,36 @@ use App\Models\WeatherLog;
 use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\Http;
 use Illuminate\Support\Facades\Log;
+<<<<<<< HEAD
 use Throwable;
+=======
+>>>>>>> ad0ccee2af44b30e9d0ff7fdf2eb6cb6db219755
 
 class WeatherService
 {
     /**
+<<<<<<< HEAD
      * @return array<string, mixed>
      */
     public function getWeather(float $lat, float $lon, bool $refresh = false): array
     {
         $cacheKey = 'weather_'.app()->getLocale().'_'.round($lat, 5).'_'.round($lon, 5);
+=======
+     * Fetch current weather data from Open-Meteo (free, no API key needed).
+     *
+     * @return array{temperature: float, humidity: float, rain: float, wind_speed: float, weather_condition: string, city: string, success: bool}
+     */
+    public function getWeather(float $lat, float $lon, bool $refresh = false): array
+    {
+        // Use higher precision for cache key to avoid coarse rounding hiding real location differences
+        $cacheKey = 'weather_'.round($lat, 5).'_'.round($lon, 5);
+>>>>>>> ad0ccee2af44b30e9d0ff7fdf2eb6cb6db219755
 
         if ($refresh) {
             Cache::forget($cacheKey);
         }
 
+<<<<<<< HEAD
         return Cache::remember($cacheKey, now()->addMinutes(3), function () use ($lat, $lon, $refresh): array {
             try {
                 $response = Http::connectTimeout(4)->timeout(12)->get('https://api.open-meteo.com/v1/forecast', [
@@ -479,3 +494,367 @@ if ($dailyPrecipitation !== null && $dailyPrecipitation > 0) return [$dailyPreci
         return $directions[(int) round($normalizedDegrees / 45)];
     }
 }
+=======
+        return Cache::remember($cacheKey, now()->addMinutes(10), function () use ($lat, $lon) {
+            try {
+                $response = Http::timeout(10)->get('https://api.open-meteo.com/v1/forecast', [
+                    'latitude' => $lat,
+                    'longitude' => $lon,
+                    'current' => 'temperature_2m,relative_humidity_2m,apparent_temperature,rain,weather_code,wind_speed_10m,wind_direction_10m,surface_pressure,visibility',
+                    'hourly' => 'temperature_2m,relative_humidity_2m,weather_code',
+                    'daily' => 'sunrise,sunset,uv_index_max',
+                    'timezone' => 'auto',
+                    'forecast_hours' => 6,
+                ]);
+
+                if ($response->successful()) {
+                    $data = $response->json();
+                    $current = $data['current'];
+                    $daily = $data['daily'] ?? [];
+                    $hourly = $data['hourly'] ?? [];
+
+                    $condition = $this->decodeWeatherCode($current['weather_code'] ?? 0);
+
+                    // Attempt reverse geocoding with 3-tier fallback chain and logging
+                    $location = $this->resolveLocation($lat, $lon);
+                    $city = $location['formatted_location'];
+
+                    // True current precipitation / rain
+                    $actualRain = $current['rain'] ?? 0.0;
+
+                    // Deterministic research-backed annual rainfall estimates by broad region/state
+                    $state = strtolower($location['state_name'] ?? '');
+                    $annualRain = 800; // baseline agricultural parameter (default)
+
+                    if (str_contains($state, 'punjab') || str_contains($state, 'haryana') || str_contains($state, 'delhi')) {
+                        $annualRain = 650;
+                    } elseif (str_contains($state, 'rajasthan')) {
+                        $annualRain = 420;
+                    } elseif (str_contains($state, 'uttar pradesh') || str_contains($state, 'bihar') || str_contains($state, 'jharkhand')) {
+                        $annualRain = 1050;
+                    } elseif (str_contains($state, 'west bengal') || str_contains($state, 'assam') || str_contains($state, 'meghalaya') || str_contains($state, 'tripura') || str_contains($state, 'nagaland') || str_contains($state, 'manipur') || str_contains($state, 'mizoram') || str_contains($state, 'arunachal')) {
+                        $annualRain = 2000;
+                    } elseif (str_contains($state, 'kerala') || str_contains($state, 'goa') || str_contains($state, 'karnataka')) {
+                        $annualRain = 2600;
+                    } elseif (str_contains($state, 'maharashtra') || str_contains($state, 'gujarat') || str_contains($state, 'madhya pradesh') || str_contains($state, 'chhattisgarh')) {
+                        $annualRain = 975;
+                    } elseif (str_contains($state, 'tamil nadu') || str_contains($state, 'andhra pradesh') || str_contains($state, 'telangana') || str_contains($state, 'odisha')) {
+                        $annualRain = 925;
+                    } elseif (str_contains($state, 'himachal') || str_contains($state, 'uttarakhand') || str_contains($state, 'jammu')) {
+                        $annualRain = 1300;
+                    } else {
+                        // Fallback estimation based on humidity and temperature (deterministic)
+                        $baseRain = ($current['relative_humidity_2m'] ?? 60) * 10;
+                        $tempRain = max(0, (30 - ($current['temperature_2m'] ?? 25))) * 20;
+                        $annualRain = (int) round($baseRain + $tempRain + 300);
+                    }
+
+                    // Bound annual rain between agricultural suitability boundaries
+                    $annualRain = max(300, min(3500, (int) round($annualRain)));
+
+                    // Log accurate current weather parameters to database
+                    WeatherLog::create([
+                        'city' => $city,
+                        'temperature' => isset($current['temperature_2m']) ? (int) round($current['temperature_2m']) : null,
+                        'humidity' => isset($current['relative_humidity_2m']) ? (int) round($current['relative_humidity_2m']) : null,
+                        'rainfall' => isset($actualRain) ? (int) round($actualRain) : 0,
+                        'wind_speed' => isset($current['wind_speed_10m']) ? (int) round($current['wind_speed_10m']) : 0,
+                        'weather_condition' => $condition,
+                        'latitude' => $lat,
+                        'longitude' => $lon,
+                    ]);
+
+                    return [
+                        'temperature' => isset($current['temperature_2m']) ? (int) round($current['temperature_2m']) : null,
+                        'apparent_temperature' => isset($current['apparent_temperature']) ? (int) round($current['apparent_temperature']) : (isset($current['temperature_2m']) ? (int) round($current['temperature_2m']) : null),
+                        'humidity' => isset($current['relative_humidity_2m']) ? (int) round($current['relative_humidity_2m']) : null,
+                        'rain' => isset($actualRain) ? (int) round($actualRain) : 0,
+                        'annual_rain' => $annualRain,
+                        'wind_speed' => isset($current['wind_speed_10m']) ? (int) round($current['wind_speed_10m']) : 0,
+                        'wind_direction' => $this->decodeWindDirection($current['wind_direction_10m'] ?? 0),
+                        'pressure' => isset($current['surface_pressure']) ? (int) round($current['surface_pressure']) : 1013,
+                        'visibility' => isset($current['visibility']) ? (int) round($current['visibility'] / 1000) : 10,
+                        'uv_index' => isset($daily['uv_index_max'][0]) ? (int) round($daily['uv_index_max'][0]) : 5,
+                        'sunrise' => isset($daily['sunrise'][0]) ? date('h:i A', strtotime($daily['sunrise'][0])) : '6:00 AM',
+                        'sunset' => isset($daily['sunset'][0]) ? date('h:i A', strtotime($daily['sunset'][0])) : '6:30 PM',
+                        'weather_condition' => $condition,
+                        'city' => $city,
+                        'city_name' => $location['city_name'],
+                        'state_name' => $location['state_name'],
+                        'formatted_location' => $location['formatted_location'],
+                        'success' => true,
+                        // Provide next 5 hours of forecast (rounded integers)
+                        'hourly' => array_map(function ($t, $h, $c) {
+                            return [
+                                'time' => date('h A', strtotime($t)),
+                                'temp' => isset($h) ? (int) round($h) : null,
+                                'condition' => $this->decodeWeatherCode($c),
+                            ];
+                        }, array_slice($hourly['time'] ?? [], 1, 5), array_slice($hourly['temperature_2m'] ?? [], 1, 5), array_slice($hourly['weather_code'] ?? [], 1, 5)),
+                    ];
+                }
+            } catch (\Exception $e) {
+                Log::error('Weather API Error: '.$e->getMessage());
+            }
+
+            // --- 2-Tier Resilient Geocoded Database/Default Fallback System ---
+            try {
+                // Tier 1 Fallback: Find closest weather log logged in last 3 days within 0.5 degrees
+                $fallback = WeatherLog::whereBetween('latitude', [$lat - 0.5, $lat + 0.5])
+                    ->whereBetween('longitude', [$lon - 0.5, $lon + 0.5])
+                    ->where('created_at', '>=', now()->subDays(3))
+                    ->latest()
+                    ->first();
+
+                if ($fallback) {
+                    Log::info('Weather API offline. Using geocoded local fallback log for: '.$fallback->city);
+
+                    return [
+                        'temperature' => $fallback->temperature,
+                        'apparent_temperature' => $fallback->temperature,
+                        'humidity' => $fallback->humidity,
+                        'rain' => $fallback->rainfall,
+                        'annual_rain' => 750, // default crop suitability annual parameter
+                        'wind_speed' => $fallback->wind_speed,
+                        'wind_direction' => 'N',
+                        'pressure' => 1013,
+                        'visibility' => 10,
+                        'uv_index' => 5,
+                        'sunrise' => '6:00 AM',
+                        'sunset' => '6:30 PM',
+                        'weather_condition' => $fallback->weather_condition,
+                        'city' => $fallback->city,
+                        'city_name' => $fallback->city,
+                        'state_name' => '',
+                        'formatted_location' => $fallback->city,
+                        'success' => true,
+                        'cached' => true,
+                        'hourly' => [
+                            ['time' => '1 hr later', 'temp' => $fallback->temperature, 'condition' => $fallback->weather_condition],
+                            ['time' => '2 hr later', 'temp' => $fallback->temperature - 1, 'condition' => $fallback->weather_condition],
+                            ['time' => '3 hr later', 'temp' => $fallback->temperature - 2, 'condition' => $fallback->weather_condition],
+                        ],
+                    ];
+                }
+            } catch (\Exception $dbEx) {
+                Log::error('Weather Database Fallback Error: '.$dbEx->getMessage());
+            }
+
+            // Tier 2 Fallback: Research-backed default regional parameters (e.g. New Delhi defaults)
+            Log::warning('Weather API and Database Fallbacks offline. Returning regional default parameters.');
+
+            return [
+                'temperature' => 28.5,
+                'apparent_temperature' => 30.0,
+                'humidity' => 60,
+                'rain' => 0.0,
+                'annual_rain' => 800,
+                'wind_speed' => 12.0,
+                'wind_direction' => 'NW',
+                'pressure' => 1011,
+                'visibility' => 8.0,
+                'uv_index' => 6,
+                'sunrise' => '05:45 AM',
+                'sunset' => '06:45 PM',
+                'weather_condition' => 'Clear Sky',
+                'city' => 'New Delhi, Delhi',
+                'city_name' => 'New Delhi',
+                'state_name' => 'Delhi',
+                'formatted_location' => 'New Delhi, Delhi',
+                'success' => true,
+                'is_default' => true,
+                'hourly' => [
+                    ['time' => '1 hr later', 'temp' => 28.0, 'condition' => 'Clear Sky'],
+                    ['time' => '2 hr later', 'temp' => 27.0, 'condition' => 'Clear Sky'],
+                    ['time' => '3 hr later', 'temp' => 26.0, 'condition' => 'Clear Sky'],
+                ],
+            ];
+        });
+    }
+
+    /**
+     * Resolve location with 3-tier fallback chain and structured logging.
+     */
+    private function resolveLocation(float $lat, float $lon): array
+    {
+        Log::info("Attempting reverse geocoding for coordinates: Lat=$lat, Lon=$lon");
+        $locale = app()->getLocale();
+
+        // --- Tier 1: OpenStreetMap Nominatim ---
+        try {
+            Log::info('Tier 1: Querying OpenStreetMap Nominatim...');
+            $response = Http::timeout(5)
+                ->withHeaders([
+                    'User-Agent' => 'CropYieldPortal/1.0 (ayush@example.com)',
+                    'Accept-Language' => $locale.',en;q=0.9',
+                ])
+                ->get('https://nominatim.openstreetmap.org/reverse', [
+                    'lat' => $lat,
+                    'lon' => $lon,
+                    'format' => 'json',
+                ]);
+
+            if ($response->successful()) {
+                $data = $response->json();
+                Log::info('Tier 1 OSM Response Successful.', ['data' => $data]);
+
+                $address = $data['address'] ?? [];
+
+                // Priority: village > locality > town > city > district
+                $city_name = $address['village']
+                    ?? $address['suburb']
+                    ?? $address['neighbourhood']
+                    ?? $address['hamlet']
+                    ?? $address['town']
+                    ?? $address['city']
+                    ?? $address['city_district']
+                    ?? $address['district']
+                    ?? $address['county']
+                    ?? null;
+
+                $state_name = $address['state'] ?? $address['state_district'] ?? null;
+
+                if ($city_name) {
+                    $formatted = $state_name ? "$city_name, $state_name" : $city_name;
+                    Log::info('Tier 1 Resolved successfully.', [
+                        'city_name' => $city_name,
+                        'state_name' => $state_name,
+                        'formatted' => $formatted,
+                    ]);
+
+                    return [
+                        'city_name' => $city_name,
+                        'state_name' => $state_name ?? '',
+                        'formatted_location' => $formatted,
+                    ];
+                }
+
+                Log::warning('Tier 1 parsed address was incomplete, attempting fallback...');
+            } else {
+                Log::warning('Tier 1 query failed with status: '.$response->status());
+            }
+        } catch (\Exception $e) {
+            Log::warning('Tier 1 OSM Geocoder threw exception: '.$e->getMessage());
+        }
+
+        // --- Tier 2: BigDataCloud Reverse Geocoding Client API ---
+        try {
+            Log::info('Tier 2: Querying BigDataCloud client API...');
+            $response = Http::timeout(5)
+                ->get('https://api.bigdatacloud.net/data/reverse-geocode-client', [
+                    'latitude' => $lat,
+                    'longitude' => $lon,
+                    'localityLanguage' => $locale,
+                ]);
+
+            if ($response->successful()) {
+                $data = $response->json();
+                Log::info('Tier 2 BigDataCloud Response Successful.', ['data' => $data]);
+
+                $city_name = $data['locality'] ?? $data['city'] ?? null;
+                $state_name = $data['principalSubdivision'] ?? null;
+
+                if ($city_name) {
+                    $formatted = $state_name ? "$city_name, $state_name" : $city_name;
+                    Log::info('Tier 2 Resolved successfully.', [
+                        'city_name' => $city_name,
+                        'state_name' => $state_name,
+                        'formatted' => $formatted,
+                    ]);
+
+                    return [
+                        'city_name' => $city_name,
+                        'state_name' => $state_name ?? '',
+                        'formatted_location' => $formatted,
+                    ];
+                }
+
+                Log::warning('Tier 2 parsed location was incomplete, attempting fallback...');
+            } else {
+                Log::warning('Tier 2 query failed with status: '.$response->status());
+            }
+        } catch (\Exception $e) {
+            Log::warning('Tier 2 BigDataCloud Geocoder threw exception: '.$e->getMessage());
+        }
+
+        // --- Tier 3: Nominatim backup URL with simplified parameters ---
+        try {
+            Log::info('Tier 3: Querying Nominatim backup service...');
+            $response = Http::timeout(5)
+                ->get('https://nominatim.openstreetmap.org/reverse', [
+                    'lat' => $lat,
+                    'lon' => $lon,
+                    'format' => 'json',
+                    'zoom' => 10,
+                ]);
+
+            if ($response->successful()) {
+                $data = $response->json();
+                Log::info('Tier 3 OSM Response Successful.', ['data' => $data]);
+
+                $address = $data['address'] ?? [];
+
+                $city_name = $address['county']
+                    ?? $address['state_district']
+                    ?? $address['city']
+                    ?? null;
+                $state_name = $address['state'] ?? null;
+
+                if ($city_name) {
+                    $formatted = $state_name ? "$city_name, $state_name" : $city_name;
+                    Log::info('Tier 3 Resolved successfully.', [
+                        'city_name' => $city_name,
+                        'state_name' => $state_name,
+                        'formatted' => $formatted,
+                    ]);
+
+                    return [
+                        'city_name' => $city_name,
+                        'state_name' => $state_name ?? '',
+                        'formatted_location' => $formatted,
+                    ];
+                }
+            }
+        } catch (\Exception $e) {
+            Log::warning('Tier 3 Geocoder failed: '.$e->getMessage());
+        }
+
+        // --- Fallback of Last Resort ---
+        Log::error('All reverse geocoders failed. Falling back to default values.');
+
+        return [
+            'city_name' => 'Patiala',
+            'state_name' => 'Punjab',
+            'formatted_location' => 'Patiala, Punjab',
+        ];
+    }
+
+    /**
+     * Decode Open-Meteo WMO weather codes into human-readable conditions.
+     */
+    private function decodeWeatherCode(int $code): string
+    {
+        return match (true) {
+            $code === 0 => 'Clear Sky',
+            in_array($code, [1, 2, 3]) => 'Partly Cloudy',
+            in_array($code, [45, 48]) => 'Foggy',
+            in_array($code, [51, 53, 55]) => 'Drizzle',
+            in_array($code, [61, 63, 65]) => 'Rainy',
+            in_array($code, [71, 73, 75]) => 'Snowy',
+            in_array($code, [80, 81, 82]) => 'Rain Showers',
+            in_array($code, [95, 96, 99]) => 'Thunderstorm',
+            default => 'Variable',
+        };
+    }
+
+    /**
+     * Decode wind direction in degrees to compass point.
+     */
+    private function decodeWindDirection(int $degrees): string
+    {
+        $directions = ['N', 'NE', 'E', 'SE', 'S', 'SW', 'W', 'NW', 'N'];
+
+        return $directions[round(($degrees % 360) / 45)];
+    }
+}
+>>>>>>> ad0ccee2af44b30e9d0ff7fdf2eb6cb6db219755

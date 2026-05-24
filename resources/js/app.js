@@ -1,4 +1,8 @@
+<<<<<<< HEAD
 ﻿/**
+=======
+/**
+>>>>>>> ad0ccee2af44b30e9d0ff7fdf2eb6cb6db219755
  * Member 1 — Frontend: Main JS — Dark mode, toast notifications, weather fetch, Chart.js helpers
  * Covers: Unit II (AJAX/API calls), Unit V (localStorage for theme preference)
  */
@@ -607,6 +611,7 @@ window.fetchWeatherByCoords = async function (latitude, longitude, isAuto = fals
         const data = await res.json();
 
         if (data.success) {
+<<<<<<< HEAD
             // Store provider-derived weather values in prediction inputs.
             setFieldValue('temperature', data.temperature !== undefined && data.temperature !== null ? String(Math.round(data.temperature)) : '');
             const rainVal = data.rainfall ?? data.precipitation ?? data.rain;
@@ -615,6 +620,11 @@ window.fetchWeatherByCoords = async function (latitude, longitude, isAuto = fals
             } else {
                 setFieldValue('rainfall', '');
             }
+=======
+            // Store rounded integer values in inputs to mimic real weather UIs
+            setFieldValue('temperature', data.temperature !== undefined && data.temperature !== null ? String(Math.round(data.temperature)) : '');
+            setFieldValue('rainfall', data.annual_rain !== undefined ? String(Math.round(data.annual_rain)) : (data.rain !== undefined ? String(Math.round(data.rain)) : ''));
+>>>>>>> ad0ccee2af44b30e9d0ff7fdf2eb6cb6db219755
             setFieldValue('humidity', data.humidity !== undefined && data.humidity !== null ? String(Math.round(data.humidity)) : '');
 
             // Proactively sync coordinates and resolved village/city name to the user database
@@ -668,6 +678,7 @@ window.fetchWeatherByCoords = async function (latitude, longitude, isAuto = fals
                 const windUnit = isHi ? 'किमी/घंटा' : 'km/h';
                 const defaultLoc = isHi ? 'आपका स्थान' : 'Your Location';
                 const loadedMsg = isHi ? `${data.city || 'चयनित स्थान'} के लिए मौसम लोड किया गया!` : `Weather loaded for ${data.city || 'selected location'}!`;
+<<<<<<< HEAD
                 const humidityText = data.humidity == null ? '--' : `${Math.round(data.humidity)}%`;
                 const windText = data.wind_speed == null ? '--' : `${Math.round(data.wind_speed)} <span class="text-[10px] font-normal">${windUnit} ${data.wind_direction ?? ''}</span>`;
                 const rainfallText = rainVal == null ? '--' : `${Math.round(rainVal * 10) / 10}<span class="text-[10px] font-normal"> mm</span>`;
@@ -686,13 +697,24 @@ window.fetchWeatherByCoords = async function (latitude, longitude, isAuto = fals
 
                 let hourlyHtml = '';
                 if (upcomingHours.length > 0) {
+=======
+
+                let hourlyHtml = '';
+                if (data.hourly && data.hourly.length > 0) {
+>>>>>>> ad0ccee2af44b30e9d0ff7fdf2eb6cb6db219755
                     hourlyHtml = `
                         <div class="mt-4 pt-3 border-t border-green-200 dark:border-green-800/50">
                             <p class="text-xs font-semibold text-green-800 dark:text-green-300 mb-2">${isHi ? 'अगले 5 घंटे' : 'Next 5 Hours'}</p>
                             <div class="flex justify-between items-center overflow-x-auto gap-2 pb-1">
+<<<<<<< HEAD
                                 ${upcomingHours.map(h => `
                                     <div class="flex flex-col items-center shrink-0 bg-white dark:bg-gray-800 rounded px-2 py-1.5 shadow-sm border border-green-100 dark:border-gray-700">
                                         <span class="text-[10px] text-gray-500">${formatForecastHour(h.time)}</span>
+=======
+                                ${data.hourly.map(h => `
+                                    <div class="flex flex-col items-center shrink-0 bg-white dark:bg-gray-800 rounded px-2 py-1.5 shadow-sm border border-green-100 dark:border-gray-700">
+                                        <span class="text-[10px] text-gray-500">${h.time}</span>
+>>>>>>> ad0ccee2af44b30e9d0ff7fdf2eb6cb6db219755
                                         <span class="text-sm font-bold text-gray-800 dark:text-gray-200">${Math.round(h.temp)}°</span>
                                     </div>
                                 `).join('')}
@@ -711,6 +733,7 @@ window.fetchWeatherByCoords = async function (latitude, longitude, isAuto = fals
                             </div>
                             <div class="text-right">
                                 <p class="text-2xl font-bold text-green-700 dark:text-green-300">${Math.round(data.temperature)}°</p>
+<<<<<<< HEAD
                                 <p class="text-[10px] text-green-600 dark:text-green-400">${isHi ? 'अनुभव' : 'Feels like'} ${Math.round((data.apparent_temperature ?? data.feels_like ?? data.temperature) ?? 0)}°</p>
                             </div>
                         </div>
@@ -727,6 +750,28 @@ window.fetchWeatherByCoords = async function (latitude, longitude, isAuto = fals
                             <div class="flex flex-col items-center">
                                 <span class="text-gray-400 text-[10px] uppercase tracking-wider mb-1">${isHi ? 'वर्तमान वर्षा' : 'Current Rainfall'}</span>
                                 <span class="font-semibold text-gray-800 dark:text-gray-200 text-sm">${rainfallText}</span>
+=======
+                                <p class="text-[10px] text-green-600 dark:text-green-400">${isHi ? 'अनुभव' : 'Feels like'} ${Math.round(data.apparent_temperature)}°</p>
+                            </div>
+                        </div>
+
+                        <div class="grid grid-cols-4 gap-3 bg-white dark:bg-gray-800 rounded-lg p-3 border border-green-100 dark:border-gray-700 shadow-sm text-center">
+                            <div class="flex flex-col items-center">
+                                <span class="text-gray-400 text-[10px] uppercase tracking-wider mb-1">${isHi ? 'नमी' : 'Humidity'}</span>
+                                <span class="font-semibold text-gray-800 dark:text-gray-200 text-sm">${Math.round(data.humidity)}%</span>
+                            </div>
+                            <div class="flex flex-col items-center">
+                                <span class="text-gray-400 text-[10px] uppercase tracking-wider mb-1">${isHi ? 'हवा' : 'Wind'}</span>
+                                <span class="font-semibold text-gray-800 dark:text-gray-200 text-sm">${Math.round(data.wind_speed)} <span class="text-[10px] font-normal">${windUnit} ${data.wind_direction}</span></span>
+                            </div>
+                            <div class="flex flex-col items-center">
+                                <span class="text-gray-400 text-[10px] uppercase tracking-wider mb-1">UV Index</span>
+                                <span class="font-semibold text-gray-800 dark:text-gray-200 text-sm">${Math.round(data.uv_index)}</span>
+                            </div>
+                            <div class="flex flex-col items-center">
+                                <span class="text-gray-400 text-[10px] uppercase tracking-wider mb-1">${isHi ? 'दृश्यता' : 'Vis.'}</span>
+                                <span class="font-semibold text-gray-800 dark:text-gray-200 text-sm">${Math.round(data.visibility)} <span class="text-[10px] font-normal">km</span></span>
+>>>>>>> ad0ccee2af44b30e9d0ff7fdf2eb6cb6db219755
                             </div>
                         </div>
                         ${hourlyHtml}

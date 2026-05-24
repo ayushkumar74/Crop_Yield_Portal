@@ -81,7 +81,11 @@ return [
     'predict_ai_powered' => 'AI-Powered',
     'select_crop' => 'Select Crop',
     'temperature' => 'Temperature (°C)',
+<<<<<<< HEAD
     'rainfall' => 'Estimated Annual Rainfall for Region (mm)',
+=======
+    'rainfall' => 'Annual Rainfall (mm)',
+>>>>>>> ad0ccee2af44b30e9d0ff7fdf2eb6cb6db219755
     'humidity' => 'Humidity (%)',
     'soil_ph' => 'Soil pH',
     'fetch_weather' => 'Use My Location',

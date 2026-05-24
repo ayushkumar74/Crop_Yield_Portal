@@ -49,6 +49,7 @@ return [
             'local_domain' => env('MAIL_EHLO_DOMAIN', parse_url((string) env('APP_URL', 'http://localhost'), PHP_URL_HOST)),
         ],
 
+<<<<<<< HEAD
         'support' => [
             'transport' => 'smtp',
             'scheme' => env('SUPPORT_MAIL_SCHEME', env('MAIL_SCHEME')),
@@ -62,6 +63,8 @@ return [
             'local_domain' => env('SUPPORT_MAIL_EHLO_DOMAIN', parse_url((string) env('APP_URL', 'http://localhost'), PHP_URL_HOST)),
         ],
 
+=======
+>>>>>>> ad0ccee2af44b30e9d0ff7fdf2eb6cb6db219755
         'ses' => [
             'transport' => 'ses',
         ],
@@ -124,9 +127,14 @@ return [
     */
 
     'from' => [
+<<<<<<< HEAD
         // Default fallback for general/prediction emails — use crop prediction sender
         'address' => env('MAIL_FROM_ADDRESS', 'cropyield.yieldreport@gmail.com'),
         'name' => env('MAIL_FROM_NAME', env('APP_NAME', 'CropYield')),
+=======
+        'address' => env('MAIL_FROM_ADDRESS', 'hello@example.com'),
+        'name' => env('MAIL_FROM_NAME', env('APP_NAME', 'Laravel')),
+>>>>>>> ad0ccee2af44b30e9d0ff7fdf2eb6cb6db219755
     ],
 
 ];

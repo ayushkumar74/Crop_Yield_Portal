@@ -11,6 +11,7 @@
 </div>
 @endif
 
+<<<<<<< HEAD
 {{-- ✅ NEW: Google Login Button --}}
 <a href="{{ route('auth.google') }}"
    class="flex items-center justify-center gap-3 w-full border border-gray-300 dark:border-gray-600
@@ -34,6 +35,8 @@
 </div>
 
 {{-- YOUR ORIGINAL FORM — NO CHANGES --}}
+=======
+>>>>>>> ad0ccee2af44b30e9d0ff7fdf2eb6cb6db219755
 <form method="POST" action="{{ route('login') }}" class="space-y-4">
     @csrf
     <div>
@@ -52,12 +55,15 @@
             {{ __('messages.remember_me') }}
         </label>
     </div>
+<<<<<<< HEAD
 
     {{-- ✅ NEW: OTP note --}}
     <p class="text-xs text-gray-400 dark:text-gray-500 bg-gray-50 dark:bg-gray-800/60 rounded-md px-3 py-2">
         🔐 A 6-digit OTP will be sent to your email after submitting.
     </p>
 
+=======
+>>>>>>> ad0ccee2af44b30e9d0ff7fdf2eb6cb6db219755
     <button type="submit" class="btn-primary w-full py-2.5">
         {{ __('messages.login_btn') }}
     </button>
@@ -69,4 +75,8 @@
     {{ __('messages.login_footer') }}
     <a href="{{ route('register') }}" class="text-green-600 dark:text-green-400 font-medium hover:underline">{{ __('messages.create_account') }}</a>
 </p>
+<<<<<<< HEAD
 @endsection
+=======
+@endsection
+>>>>>>> ad0ccee2af44b30e9d0ff7fdf2eb6cb6db219755

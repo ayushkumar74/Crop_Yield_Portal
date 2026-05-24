@@ -15,20 +15,27 @@
 
 <form method="POST" action="{{ route('register') }}" class="space-y-4">
     @csrf
+<<<<<<< HEAD
 
     {{-- NAME FIELD --}}
+=======
+>>>>>>> ad0ccee2af44b30e9d0ff7fdf2eb6cb6db219755
     <div>
         <label class="form-label" for="name">{{ __('messages.name') }}</label>
         <input id="name" type="text" name="name" value="{{ old('name') }}" required
             class="form-input" placeholder="Your full name">
     </div>
+<<<<<<< HEAD
 
     {{-- EMAIL FIELD --}}
+=======
+>>>>>>> ad0ccee2af44b30e9d0ff7fdf2eb6cb6db219755
     <div>
         <label class="form-label" for="email">{{ __('messages.email') }}</label>
         <input id="email" type="email" name="email" value="{{ old('email') }}" required
             class="form-input" placeholder="you@example.com">
     </div>
+<<<<<<< HEAD
 
     {{-- PASSWORD FIELD --}}
     <div>
@@ -65,10 +72,23 @@
     </div>
 
     {{-- SUBMIT BUTTON --}}
+=======
+    <div>
+        <label class="form-label" for="password">{{ __('messages.password') }}</label>
+        <input id="password" type="password" name="password" required
+            class="form-input" placeholder="Min. 8 characters">
+    </div>
+    <div>
+        <label class="form-label" for="password_confirmation">{{ __('messages.confirm_password') }}</label>
+        <input id="password_confirmation" type="password" name="password_confirmation" required
+            class="form-input" placeholder="Repeat password">
+    </div>
+>>>>>>> ad0ccee2af44b30e9d0ff7fdf2eb6cb6db219755
     <button type="submit" class="btn-primary w-full py-2.5">
         {{ __('messages.register_btn') }}
     </button>
 </form>
+<<<<<<< HEAD
 
 <script>
     function checkStrength(val) {
@@ -122,6 +142,8 @@
     }
 </script>
 
+=======
+>>>>>>> ad0ccee2af44b30e9d0ff7fdf2eb6cb6db219755
 @endsection
 
 @section('auth-footer')
@@ -129,4 +151,8 @@
     {{ __('messages.register_footer') }}
     <a href="{{ route('login') }}" class="text-green-600 dark:text-green-400 font-medium hover:underline">{{ __('messages.sign_in_link') }}</a>
 </p>
+<<<<<<< HEAD
 @endsection
+=======
+@endsection
+>>>>>>> ad0ccee2af44b30e9d0ff7fdf2eb6cb6db219755

@@ -7,8 +7,11 @@ use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Notifications\Notifiable;
+<<<<<<< HEAD
 use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Str;
+=======
+>>>>>>> ad0ccee2af44b30e9d0ff7fdf2eb6cb6db219755
 
 class User extends Authenticatable
 {
@@ -58,6 +61,7 @@ class User extends Authenticatable
         return $this->role === 'admin';
     }
 
+<<<<<<< HEAD
     public function avatarUrl(): ?string
     {
         if ($this->avatar === null || $this->avatar === '') {
@@ -71,16 +75,21 @@ class User extends Authenticatable
         return Storage::disk('public')->url($this->avatar);
     }
 
+=======
+>>>>>>> ad0ccee2af44b30e9d0ff7fdf2eb6cb6db219755
     public function predictions(): HasMany
     {
         return $this->hasMany(Prediction::class);
     }
 
+<<<<<<< HEAD
     public function supportTickets(): HasMany
     {
         return $this->hasMany(SupportTicket::class);
     }
 
+=======
+>>>>>>> ad0ccee2af44b30e9d0ff7fdf2eb6cb6db219755
     public function latestPrediction()
     {
         return $this->hasOne(Prediction::class)->latestOfMany();

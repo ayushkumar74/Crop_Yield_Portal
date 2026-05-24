@@ -138,7 +138,11 @@
                         </div>
                         <div>
                             <label class="form-label" for="rainfall">{{ __('messages.rainfall') }}</label>
+<<<<<<< HEAD
                             <input type="number" step="0.1" name="rainfall" id="rainfall"
+=======
+                            <input type="number" step="1" name="rainfall" id="rainfall"
+>>>>>>> ad0ccee2af44b30e9d0ff7fdf2eb6cb6db219755
                                 class="form-input" placeholder="800"
                                 value="{{ old('rainfall') }}" oninput="fetchCropSuggestions()">
                             @error('rainfall') <p class="text-xs text-red-500 mt-1">{{ $message }}</p> @enderror
@@ -267,10 +271,17 @@ document.addEventListener('DOMContentLoaded', () => {
                     const container = form.querySelector('.stat-card') || form;
                     container.parentNode.insertBefore(banner, container);
                 }
+<<<<<<< HEAD
                 banner.innerHTML = `<strong>⚠️ {{ app()->getLocale() == 'hi' ? '⚠️ मौसमी चेतावनी:' : '⚠️ Seasonal warning:' }}</strong> <div class="text-sm mt-1">${data.message}</div>
                     <div class="mt-3 flex gap-2">
                         <button id="season-continue" type="button" class="btn-primary px-3 py-1 text-sm">{{ app()->getLocale() == 'hi' ? 'जारी रखें' : 'Continue Anyway' }}</button>
                         <button id="season-cancel" type="button" class="btn-secondary px-3 py-1 text-sm">{{ app()->getLocale() == 'hi' ? 'रद्द करें' : 'Cancel' }}</button>
+=======
+                banner.innerHTML = `<strong>⚠️ Seasonal warning:</strong> <div class="text-sm mt-1">${data.message}</div>
+                    <div class="mt-3 flex gap-2">
+                        <button id="season-continue" type="button" class="btn-primary px-3 py-1 text-sm">Continue Anyway</button>
+                        <button id="season-cancel" type="button" class="btn-secondary px-3 py-1 text-sm">Cancel</button>
+>>>>>>> ad0ccee2af44b30e9d0ff7fdf2eb6cb6db219755
                     </div>`;
 
                 document.getElementById('season-continue')?.addEventListener('click', () => {

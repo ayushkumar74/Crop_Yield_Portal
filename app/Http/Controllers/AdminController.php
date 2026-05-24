@@ -20,8 +20,11 @@ class AdminController extends Controller
             'total_predictions' => Prediction::count(),
             'total_crops' => Crop::count(),
             'total_weather_logs' => WeatherLog::count(),
+<<<<<<< HEAD
             'total_tickets' => \App\Models\SupportTicket::count(),
             'open_tickets' => \App\Models\SupportTicket::where('status', 'open')->count(),
+=======
+>>>>>>> ad0ccee2af44b30e9d0ff7fdf2eb6cb6db219755
         ];
 
         $recentPredictions = Prediction::with(['crop', 'user'])->latest()->limit(10)->get();
@@ -174,6 +177,7 @@ class AdminController extends Controller
 
         return back()->with('success', __('messages.prediction_delete_success'));
     }
+<<<<<<< HEAD
 
     // ─── Support Ticket Management ────────────────────────────────────────────
 
@@ -252,4 +256,6 @@ class AdminController extends Controller
 
         return back()->with('success', 'Ticket resolved and user notified via email.');
     }
+=======
+>>>>>>> ad0ccee2af44b30e9d0ff7fdf2eb6cb6db219755
 }
