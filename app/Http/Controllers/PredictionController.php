@@ -215,32 +215,19 @@ class PredictionController extends Controller
      */
     public function show(Prediction $prediction)
     {
-<<<<<<< HEAD
         app()->setLocale(session('locale', 'en'));
         $prediction->load('crop', 'user');
 
         $guidanceService = new CropGuidanceService;
         $baseProfile = $guidanceService->getCropProfile($prediction->crop->name);
 
-$aiData = json_decode($prediction->recommendation, true);
-
-if (is_array($aiData)) {
-    $cropProfile = array_merge($baseProfile, $aiData);
-} else {
-    $cropProfile = $baseProfile;
-    $cropProfile['ai_insight'] = $prediction->recommendation;
-}
-=======
-        $prediction->load('crop', 'user');
-
-        $guidanceService = new CropGuidanceService;
-        $cropProfile = json_decode($prediction->recommendation, true);
-        if (! is_array($cropProfile)) {
-            // Backward compatibility if old prediction has plain text
-            $cropProfile = $guidanceService->getCropProfile($prediction->crop->name);
+        $aiData = json_decode($prediction->recommendation, true);
+        if (is_array($aiData)) {
+            $cropProfile = array_merge($baseProfile, $aiData);
+        } else {
+            $cropProfile = $baseProfile;
             $cropProfile['ai_insight'] = $prediction->recommendation;
         }
->>>>>>> ad0ccee2af44b30e9d0ff7fdf2eb6cb6db219755
 
         // --- Core Metric Calculations ---
         $tempScore = $this->calculateFactorScore($prediction->temperature, $prediction->crop->min_temp, $prediction->crop->max_temp);

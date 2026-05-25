@@ -9,11 +9,7 @@
     "sail": false,
     "skills": [
         "laravel-best-practices",
-<<<<<<< HEAD
         "socialite-development",
-=======
->>>>>>> ad0ccee2af44b30e9d0ff7fdf2eb6cb6db219755
-        "pest-testing",
-        "tailwindcss-development"
+        "pest-testing"
     ]
 }

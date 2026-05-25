@@ -10,19 +10,19 @@ return new class extends Migration
     {
         // Add google_id and other columns to users (only if they don't exist)
         Schema::table('users', function (Blueprint $table) {
-            if (!Schema::hasColumn('users', 'google_id')) {
+            if (! Schema::hasColumn('users', 'google_id')) {
                 $table->string('google_id')->nullable()->unique()->after('email');
             }
-            if (!Schema::hasColumn('users', 'avatar')) {
+            if (! Schema::hasColumn('users', 'avatar')) {
                 $table->string('avatar')->nullable()->after('google_id');
             }
-            if (!Schema::hasColumn('users', 'password_set')) {
+            if (! Schema::hasColumn('users', 'password_set')) {
                 $table->boolean('password_set')->default(true)->after('avatar');
             }
         });
 
         // OTP table for login verification
-        if (!Schema::hasTable('login_otps')) {
+        if (! Schema::hasTable('login_otps')) {
             Schema::create('login_otps', function (Blueprint $table) {
                 $table->id();
                 $table->string('email')->index();

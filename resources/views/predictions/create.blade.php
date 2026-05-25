@@ -23,13 +23,18 @@
     </div>
     @endif
 
+    {{-- Seasonal Warning Banner (dynamically populated by JavaScript) --}}
+    <div id="season-warning-banner" class="hidden mb-5 p-4 bg-amber-50 dark:bg-amber-900/20 border border-amber-200 dark:border-amber-700 rounded-md">
+        {{-- Content will be inserted by JavaScript --}}
+    </div>
+
     <form action="{{ route('predictions.store') }}" method="POST" id="prediction-form">
         @csrf
         <input type="hidden" name="crop_name" id="crop-name-hidden" value="">
-        <div class="grid lg:grid-cols-3 gap-5">
+        <div class="grid lg:grid-cols-3 gap-4">
 
             {{-- ── Left Column ─────────────────────────────────────────────────── --}}
-            <div class="lg:col-span-2 space-y-5">
+            <div class="lg:col-span-2 space-y-4">
 
                 {{-- Crop Selection --}}
                 <div class="stat-card">
@@ -138,11 +143,7 @@
                         </div>
                         <div>
                             <label class="form-label" for="rainfall">{{ __('messages.rainfall') }}</label>
-<<<<<<< HEAD
                             <input type="number" step="0.1" name="rainfall" id="rainfall"
-=======
-                            <input type="number" step="1" name="rainfall" id="rainfall"
->>>>>>> ad0ccee2af44b30e9d0ff7fdf2eb6cb6db219755
                                 class="form-input" placeholder="800"
                                 value="{{ old('rainfall') }}" oninput="fetchCropSuggestions()">
                             @error('rainfall') <p class="text-xs text-red-500 mt-1">{{ $message }}</p> @enderror
@@ -180,7 +181,7 @@
             </div>
 
             {{-- ── Right Column ─────────────────────────────────────────────────── --}}
-            <div class="space-y-4">
+            <div class="space-y-3">
 
                 {{-- Suggested Crops --}}
                 <div class="stat-card">
@@ -267,22 +268,15 @@ document.addEventListener('DOMContentLoaded', () => {
                 if (!banner) {
                     banner = document.createElement('div');
                     banner.id = 'season-warning-banner';
-                    banner.className = 'mb-4 p-3 rounded border border-amber-200 bg-amber-50 text-amber-800';
-                    const container = form.querySelector('.stat-card') || form;
-                    container.parentNode.insertBefore(banner, container);
-                }
-<<<<<<< HEAD
-                banner.innerHTML = `<strong>⚠️ {{ app()->getLocale() == 'hi' ? '⚠️ मौसमी चेतावनी:' : '⚠️ Seasonal warning:' }}</strong> <div class="text-sm mt-1">${data.message}</div>
-                    <div class="mt-3 flex gap-2">
-                        <button id="season-continue" type="button" class="btn-primary px-3 py-1 text-sm">{{ app()->getLocale() == 'hi' ? 'जारी रखें' : 'Continue Anyway' }}</button>
-                        <button id="season-cancel" type="button" class="btn-secondary px-3 py-1 text-sm">{{ app()->getLocale() == 'hi' ? 'रद्द करें' : 'Cancel' }}</button>
-=======
-                banner.innerHTML = `<strong>⚠️ Seasonal warning:</strong> <div class="text-sm mt-1">${data.message}</div>
-                    <div class="mt-3 flex gap-2">
-                        <button id="season-continue" type="button" class="btn-primary px-3 py-1 text-sm">Continue Anyway</button>
-                        <button id="season-cancel" type="button" class="btn-secondary px-3 py-1 text-sm">Cancel</button>
->>>>>>> ad0ccee2af44b30e9d0ff7fdf2eb6cb6db219755
-                    </div>`;
+                        banner.className = 'mb-4 p-3 rounded border border-amber-200 bg-amber-50 text-amber-800';
+                        const container = form.querySelector('.stat-card') || form;
+                        container.parentNode.insertBefore(banner, container);
+                    }
+                    banner.innerHTML = `<strong>⚠️ {{ app()->getLocale() == 'hi' ? '⚠️ मौसमी चेतावनी:' : '⚠️ Seasonal warning:' }}</strong> <div class="text-sm mt-1">${data.message}</div>
+                        <div class="mt-3 flex gap-2">
+                            <button id="season-continue" type="button" class="btn-primary px-3 py-1 text-sm">{{ app()->getLocale() == 'hi' ? 'जारी रखें' : 'Continue Anyway' }}</button>
+                            <button id="season-cancel" type="button" class="btn-secondary px-3 py-1 text-sm">{{ app()->getLocale() == 'hi' ? 'रद्द करें' : 'Cancel' }}</button>
+                        </div>`;
 
                 document.getElementById('season-continue')?.addEventListener('click', () => {
                     banner.remove();

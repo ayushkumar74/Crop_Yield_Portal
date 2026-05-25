@@ -6,153 +6,110 @@ use App\Models\WeatherLog;
 use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\Http;
 use Illuminate\Support\Facades\Log;
-<<<<<<< HEAD
 use Throwable;
-=======
->>>>>>> ad0ccee2af44b30e9d0ff7fdf2eb6cb6db219755
 
 class WeatherService
 {
     /**
-<<<<<<< HEAD
+     * Fetch current weather data from Open-Meteo and return normalized structure.
+     *
      * @return array<string, mixed>
      */
     public function getWeather(float $lat, float $lon, bool $refresh = false): array
     {
-        $cacheKey = 'weather_'.app()->getLocale().'_'.round($lat, 5).'_'.round($lon, 5);
-=======
-     * Fetch current weather data from Open-Meteo (free, no API key needed).
-     *
-     * @return array{temperature: float, humidity: float, rain: float, wind_speed: float, weather_condition: string, city: string, success: bool}
-     */
-    public function getWeather(float $lat, float $lon, bool $refresh = false): array
-    {
-        // Use higher precision for cache key to avoid coarse rounding hiding real location differences
         $cacheKey = 'weather_'.round($lat, 5).'_'.round($lon, 5);
->>>>>>> ad0ccee2af44b30e9d0ff7fdf2eb6cb6db219755
 
         if ($refresh) {
             Cache::forget($cacheKey);
         }
 
-<<<<<<< HEAD
-        return Cache::remember($cacheKey, now()->addMinutes(3), function () use ($lat, $lon, $refresh): array {
+        return Cache::remember($cacheKey, now()->addMinutes(5), function () use ($lat, $lon) {
             try {
                 $response = Http::connectTimeout(4)->timeout(12)->get('https://api.open-meteo.com/v1/forecast', [
-                    'latitude'  => $lat,
+                    'latitude' => $lat,
                     'longitude' => $lon,
-                    'current'   => implode(',', [
-                        'temperature_2m',
-                        'relative_humidity_2m',
-                        'apparent_temperature',
-                        'precipitation',
-                        'rain',
-                        'showers',
-                        'precipitation_probability',
-                        'weather_code',
-                        'wind_speed_10m',
-                        'wind_direction_10m',
-                    ]),
-                    'hourly' => implode(',', [
-                        'temperature_2m',
-                        'apparent_temperature',
-                        'relative_humidity_2m',
-                        'dew_point_2m',
-                        'precipitation',
-                        'rain',
-                        'showers',
-                        'precipitation_probability',
-                        'weather_code',
-                        'wind_speed_10m',
-                        'wind_direction_10m',
-                    ]),
-                                        'daily'              => 'precipitation_sum,precipitation_probability_max',
-                    'timezone'           => 'auto',
-                    'temperature_unit'   => 'celsius',
-                    'precipitation_unit' => 'mm',
-                    'wind_speed_unit'    => 'kmh',
-                    'forecast_days'      => 2,
+                    'current_weather' => true,
+                    'hourly' => 'temperature_2m,apparent_temperature,relative_humidity_2m,precipitation,precipitation_probability,weathercode,wind_speed_10m,wind_direction_10m',
+                    'daily' => 'precipitation_sum,precipitation_probability_max',
+                    'timezone' => 'auto',
                 ]);
 
                 if (! $response->successful()) {
                     Log::warning('WeatherService: Open-Meteo request failed.', ['status' => $response->status()]);
+
                     return ['success' => false, 'message' => 'Weather provider unavailable'];
                 }
 
-                $data         = $response->json();
-                $current      = $data['current'] ?? [];
-                $legacyCurrent = $data['current_weather'] ?? [];
-                $currentTime  = $current['time'] ?? $legacyCurrent['time'] ?? null;
-                $currentIndex = $this->currentHourlyIndex($data, $currentTime);
+                $data = $response->json();
+                $current = $data['current_weather'] ?? ($data['current'] ?? []);
+                $hourly = $data['hourly'] ?? [];
 
-                $temperature = $this->number($current['temperature_2m'] ?? $legacyCurrent['temperature'] ?? null)
+                $currentIndex = $this->currentHourlyIndex($data, $current['time'] ?? null);
+
+                $temperature = $this->number($current['temperature'] ?? $current['temperature_2m'] ?? null)
                     ?? $this->hourlyValue($data, 'temperature_2m', $currentIndex);
 
                 if ($temperature === null) {
                     return ['success' => false, 'message' => 'Current weather unavailable'];
                 }
 
-                $humidity  = $this->number($current['relative_humidity_2m'] ?? null)
+                $humidity = $this->number($current['relative_humidity_2m'] ?? null)
                     ?? $this->hourlyValue($data, 'relative_humidity_2m', $currentIndex);
+
                 $feelsLike = $this->number($current['apparent_temperature'] ?? null)
                     ?? $this->hourlyValue($data, 'apparent_temperature', $currentIndex)
                     ?? $temperature;
 
-                [$precipitation, $precipitationSource, $precipitationProbability] =
-                    $this->resolvePrecipitation($data, $current, $currentIndex);
+                [$precipitation, $precipitationSource, $precipitationProbability] = $this->resolvePrecipitation($data, $current, $currentIndex);
 
-                if ($precipitation === null) {
-                    return ['success' => false, 'message' => 'Current rainfall unavailable'];
-                }
+                [$annualRain, $annualRainSource] = $this->resolveAnnualRainfall($lat, $lon, $data, $precipitation ?? 0.0);
 
-                [$annualRain, $annualRainSource] =
-                    $this->resolveAnnualRainfall($lat, $lon, $data, $precipitation, $refresh);
-
-                $windSpeed   = $this->number($current['wind_speed_10m'] ?? $legacyCurrent['windspeed'] ?? null)
+                $windSpeed = $this->number($current['wind_speed'] ?? $current['wind_speed_10m'] ?? null)
                     ?? $this->hourlyValue($data, 'wind_speed_10m', $currentIndex);
-                $windDegrees = $this->number($current['wind_direction_10m'] ?? $legacyCurrent['winddirection'] ?? null)
+
+                $windDegrees = $this->number($current['wind_direction'] ?? $current['wind_direction_10m'] ?? null)
                     ?? $this->hourlyValue($data, 'wind_direction_10m', $currentIndex);
-                $weatherCode = $this->number($current['weather_code'] ?? $legacyCurrent['weathercode'] ?? null)
-                    ?? $this->hourlyValue($data, 'weather_code', $currentIndex)
-                    ?? $this->hourlyValue($data, 'weathercode', $currentIndex);
+
+                $weatherCode = $this->number($current['weathercode'] ?? $current['weather_code'] ?? null)
+                    ?? $this->hourlyValue($data, 'weathercode', $currentIndex)
+                    ?? $this->hourlyValue($data, 'weather_code', $currentIndex);
 
                 $location = $this->resolveLocation($lat, $lon);
 
                 $result = [
-                    'success'                  => true,
-                    'temperature'              => $temperature,
-                    'humidity'                 => $humidity,
-                    'feels_like'               => $feelsLike,
-                    'apparent_temperature'     => $feelsLike,
-                    'precipitation'            => $precipitation,
-                    'rain'                     => $precipitation,
-                    'rainfall'                 => $precipitation,
-                    'rainfall_source'          => $precipitationSource,
-                    'annual_rain'              => $annualRain,
-                    'annual_rain_source'       => $annualRainSource,
-                    'precipitation_probability' => $precipitationProbability,
-                    'wind_speed'               => $windSpeed,
-                    'wind_direction'           => $windDegrees === null ? null : $this->decodeWindDirection((int) round($windDegrees)),
-                    'weather_condition'        => $weatherCode === null ? null : $this->decodeWeatherCode((int) round($weatherCode)),
-                    'city'                     => $location['formatted_location'],
-                    'city_name'                => $location['city_name'],
-                    'state_name'               => $location['state_name'],
-                    'formatted_location'       => $location['formatted_location'],
-                    'hourly'                   => $this->hourlyForecast($data, $currentIndex),
+                    'success' => true,
+                    'temperature' => $temperature,
+                    'humidity' => $humidity,
+                    'feels_like' => $feelsLike,
+                    'precipitation' => $precipitation ?? 0.0,
+                    'rain' => $precipitation ?? 0.0,
+                    'rainfall' => $precipitation ?? 0.0,
+                    'rainfall_source' => $precipitationSource ?? null,
+                    'annual_rain' => $annualRain,
+                    'annual_rain_source' => $annualRainSource,
+                    'precipitation_probability' => $precipitationProbability ?? null,
+                    'wind_speed' => $windSpeed,
+                    'wind_direction' => $windDegrees === null ? null : $this->decodeWindDirection((int) round($windDegrees)),
+                    'weather_condition' => $weatherCode === null ? null : $this->decodeWeatherCode((int) round($weatherCode)),
+                    'city' => $location['formatted_location'],
+                    'city_name' => $location['city_name'],
+                    'state_name' => $location['state_name'],
+                    'formatted_location' => $location['formatted_location'],
+                    'hourly' => $this->hourlyForecast($data, $currentIndex),
                 ];
 
                 $this->logWeather($result, $lat, $lon);
 
                 return $result;
+            } catch (Throwable $e) {
+                Log::error('WeatherService: unexpected error. '.$e->getMessage());
 
-            } catch (Throwable $exception) {
-                Log::error('WeatherService: unexpected error.', ['message' => $exception->getMessage()]);
                 return ['success' => false, 'message' => 'Unexpected error'];
             }
         });
     }
 
-    /** @param array<string, mixed> $data */
+    /** @param array<string,mixed> $data */
     private function currentHourlyIndex(array $data, mixed $currentTime): ?int
     {
         if (! is_string($currentTime) || ! isset($data['hourly']['time']) || ! is_array($data['hourly']['time'])) {
@@ -160,7 +117,6 @@ class WeatherService
         }
 
         $index = array_search($currentTime, $data['hourly']['time'], true);
-
         if ($index === false) {
             $currentHour = substr($currentTime, 0, 13);
             foreach ($data['hourly']['time'] as $i => $t) {
@@ -173,251 +129,237 @@ class WeatherService
         return $index === false ? null : $index;
     }
 
-    /** @param array<string, mixed> $data */
     private function hourlyValue(array $data, string $field, ?int $index): ?float
     {
-        if ($index === null) return null;
+        if ($index === null) {
+            return null;
+        }
+
         return $this->number($data['hourly'][$field][$index] ?? null);
     }
 
-    /** @param array<string, mixed> $data */
     private function nearestHourlyValue(array $data, string $field, ?int $index): ?float
     {
         $values = $data['hourly'][$field] ?? [];
-        if (! is_array($values) || $values === []) return null;
+        if (! is_array($values) || $values === []) {
+            return null;
+        }
 
         if ($index !== null) {
             for ($d = 0; $d < count($values); $d++) {
                 foreach ([$index + $d, $index - $d] as $i) {
                     $v = $this->number($values[$i] ?? null);
-                    if ($v !== null) return $v;
+                    if ($v !== null) {
+                        return $v;
+                    }
                 }
             }
         }
 
         foreach ($values as $v) {
             $n = $this->number($v);
-            if ($n !== null) return $n;
+            if ($n !== null) {
+                return $n;
+            }
         }
 
         return null;
     }
 
-    /**
-     * @param  array<string, mixed> $data
-     * @param  array<string, mixed> $current
-     * @return array{0: ?float, 1: string, 2: ?float}
-     */
     private function resolvePrecipitation(array $data, array $current, ?int $currentIndex): array
     {
         $probability = $this->number($current['precipitation_probability'] ?? null)
             ?? $this->hourlyValue($data, 'precipitation_probability', $currentIndex)
             ?? $this->number($data['daily']['precipitation_probability_max'][0] ?? null);
 
-
-
-        $rain    = $this->number($current['rain'] ?? null);
+        $rain = $this->number($current['rain'] ?? null);
         $showers = $this->number($current['showers'] ?? null);
+
         if ($rain !== null || $showers !== null) {
             return [($rain ?? 0.0) + ($showers ?? 0.0), 'current_rain_and_showers', $probability];
         }
 
         $precipitation = $this->nearestHourlyValue($data, 'precipitation', $currentIndex);
-        if ($precipitation !== null) return [$precipitation, 'hourly_precipitation', $probability];
+        if ($precipitation !== null) {
+            return [$precipitation, 'hourly_precipitation', $probability];
+        }
 
         $dailyPrecipitation = $this->number($data['daily']['precipitation_sum'][0] ?? null);
-if ($dailyPrecipitation !== null && $dailyPrecipitation > 0) return [$dailyPrecipitation, 'daily_precipitation_sum', $probability];
+        if ($dailyPrecipitation !== null && $dailyPrecipitation > 0) {
+            return [$dailyPrecipitation, 'daily_precipitation_sum', $probability];
+        }
 
-        if ($probability !== null) return [round($probability / 100, 2), 'precipitation_probability_estimate', $probability];
+        if ($probability !== null) {
+            return [round($probability / 100, 2), 'precipitation_probability_estimate', $probability];
+        }
 
         return [null, 'precipitation_unavailable', null];
     }
 
-    /**
-     * @param  array<string, mixed> $forecast
-     * @return array{0: ?float, 1: string}
-     */
-    private function resolveAnnualRainfall(float $lat, float $lon, array $forecast, float $currentRainfall, bool $refresh): array
+    private function resolveAnnualRainfall(float $lat, float $lon, array $data, float $precipitation = 0.0): array
     {
-        $cacheKey = 'annual_rain_'.app()->getLocale().'_'.round($lat, 5).'_'.round($lon, 5);
-
-        if ($refresh) {
-            Cache::forget($cacheKey);
-        }
-
-        return Cache::remember($cacheKey, now()->addHours(12), function () use ($lat, $lon): array {
-            try {
-                $response = Http::connectTimeout(4)->timeout(12)->get('https://archive-api.open-meteo.com/v1/archive', [
-                    'latitude'           => $lat,
-                    'longitude'          => $lon,
-                    'start_date'         => now()->subDays(365)->toDateString(),
-                    'end_date'           => now()->subDay()->toDateString(),
-                    'daily'              => 'precipitation_sum',
-                    'timezone'           => 'auto',
-                    'precipitation_unit' => 'mm',
-                ]);
-
-                if ($response->successful()) {
-                    $dailyRainfall = array_filter(
-                        $response->json('daily.precipitation_sum', []),
-                        fn (mixed $v): bool => is_numeric($v)
-                    );
-
-                    if ($dailyRainfall !== []) {
-                        return [round(array_sum($dailyRainfall), 1), 'historical_365_day_precipitation'];
-                    }
+        // Try to use daily precipitation from the main provider first (may be a list)
+        $daily = $data['daily']['precipitation_sum'] ?? null;
+        if (is_array($daily) && $daily !== []) {
+            $sum = 0.0;
+            foreach ($daily as $val) {
+                $n = $this->number($val);
+                if ($n !== null) {
+                    $sum += $n;
                 }
-            } catch (Throwable $exception) {
-                Log::debug('WeatherService: historical rainfall failed.', ['message' => $exception->getMessage()]);
             }
-
-            // ── Fallback: state-based research estimate ──────────────────
-            // Called only when archive API is unreachable
-            try {
-                $location = $this->resolveLocation($lat, $lon);
-                $state    = strtolower($location['state_name'] ?? '');
-            } catch (Throwable $e) {
-                $state = '';
-            }
-
-            $estimate = match (true) {
-                str_contains($state, 'punjab') || str_contains($state, 'haryana') || str_contains($state, 'delhi')      => 650,
-                str_contains($state, 'rajasthan')                                                                         => 420,
-                str_contains($state, 'uttar pradesh') || str_contains($state, 'bihar') || str_contains($state, 'jharkhand') => 1050,
-                str_contains($state, 'west bengal') || str_contains($state, 'assam') || str_contains($state, 'meghalaya')  => 2000,
-                str_contains($state, 'kerala') || str_contains($state, 'goa') || str_contains($state, 'karnataka')         => 2600,
-                str_contains($state, 'maharashtra') || str_contains($state, 'gujarat') || str_contains($state, 'madhya pradesh') => 975,
-                str_contains($state, 'tamil nadu') || str_contains($state, 'andhra pradesh') || str_contains($state, 'telangana') => 925,
-                str_contains($state, 'himachal') || str_contains($state, 'uttarakhand') || str_contains($state, 'jammu')    => 1300,
-                default => null,
-            };
-
-            return $estimate !== null
-                ? [(float) $estimate, 'state_estimate_fallback']
-                : [null, 'unavailable'];
-        });
-    }
-
-    /**
-     * @param  array<string, mixed> $data
-     * @return list<array{time: string, temp: ?float, condition: ?string, rainfall: ?float}>
-     */
-    private function hourlyForecast(array $data, ?int $currentIndex): array
-    {
-        $times = $data['hourly']['time'] ?? [];
-        if (! is_array($times) || $currentIndex === null) return [];
-
-        $hourly    = [];
-        $lastIndex = min(count($times) - 1, $currentIndex + 5);
-
-        for ($i = $currentIndex + 1; $i <= $lastIndex; $i++) {
-            $code     = $this->number($data['hourly']['weather_code'][$i] ?? $data['hourly']['weathercode'][$i] ?? null);
-            $hourly[] = [
-                'time'      => (string) $times[$i],
-                'temp'      => $this->number($data['hourly']['temperature_2m'][$i] ?? null),
-                'condition' => $code === null ? null : $this->decodeWeatherCode((int) round($code)),
-                'rainfall'  => $this->number($data['hourly']['precipitation'][$i] ?? null),
-            ];
-        }
-
-        return $hourly;
-    }
-
-    /** @return array{city_name: string, state_name: string, formatted_location: string} */
-    private function resolveLocation(float $lat, float $lon): array
-    {
-        $locale          = app()->getLocale() === 'hi' ? 'hi' : 'en';
-        $smallPlaces     = [];
-        $broaderLocation = null;
-
-        foreach ([10, 12] as $zoom) {
-            try {
-                $response = Http::connectTimeout(3)->timeout(6)
-                    ->withHeaders(['User-Agent' => 'CropYieldPortal/1.0'])
-                    ->get('https://nominatim.openstreetmap.org/reverse', [
-                        'lat'             => $lat,
-                        'lon'             => $lon,
-                        'format'          => 'jsonv2',
-                        'zoom'            => $zoom,
-                        'addressdetails'  => 1,
-                        'accept-language' => $locale,
-                        'layer'           => 'address',
-                    ]);
-
-                if (! $response->successful()) continue;
-
-                $address = $response->json('address', []);
-
-                foreach (['village', 'hamlet', 'isolated_dwelling'] as $type) {
-                    if (isset($address[$type]) && is_string($address[$type])) {
-                        $smallPlaces[] = $address[$type];
-                    }
-                }
-
-                $city     = $address['city'] ?? $address['town'] ?? $address['municipality'] ?? $address['city_district'] ?? null;
-                $state    = $address['state'] ?? $address['province'] ?? '';
-                $district = $address['state_district'] ?? $address['county'] ?? null;
-
-                if (is_string($city) && $city !== '') {
-                    return $this->formatLocation($city, is_string($state) ? $state : '');
-                }
-
-                if ($broaderLocation === null && is_string($district) && $district !== '') {
-                    $broaderLocation = $this->formatLocation($district, is_string($state) ? $state : '');
-                }
-            } catch (Throwable $e) {
-                Log::debug('WeatherService: Nominatim failed.', ['message' => $e->getMessage()]);
+            if ($sum > 0) {
+                return [$sum, 'daily_sum'];
             }
         }
 
-        $googleMapsKey = config('services.google_maps.key');
-        if (is_string($googleMapsKey) && $googleMapsKey !== '') {
-            try {
-                $response = Http::connectTimeout(3)->timeout(6)->get('https://maps.googleapis.com/maps/api/geocode/json', [
-                    'latlng'   => $lat.','.$lon,
-                    'key'      => $googleMapsKey,
-                    'language' => $locale,
-                ]);
+        // If main provider didn't provide annual daily sums, try the archive API
+        try {
+            $year = date('Y');
+            $resp = Http::connectTimeout(4)->timeout(10)->get('https://archive-api.open-meteo.com/v1/archive', [
+                'latitude' => $lat,
+                'longitude' => $lon,
+                'start_date' => $year.'-01-01',
+                'end_date' => $year.'-12-31',
+                'daily' => 'precipitation_sum',
+                'timezone' => 'auto',
+            ]);
 
-                if ($response->successful()) {
-                    $components = $response->json('results.0.address_components', []);
-                    $state      = $this->googleComponent($components, 'administrative_area_level_1') ?? '';
-
-                    foreach (['locality', 'postal_town', 'administrative_area_level_3', 'administrative_area_level_2'] as $type) {
-                        $city = $this->googleComponent($components, $type);
-                        if ($city !== null && ! in_array($city, $smallPlaces, true)) {
-                            return $this->formatLocation($city, $state);
+            if ($resp->successful()) {
+                $archive = $resp->json();
+                $dailyA = $archive['daily']['precipitation_sum'] ?? null;
+                if (is_array($dailyA) && $dailyA !== []) {
+                    $sumA = 0.0;
+                    foreach ($dailyA as $v) {
+                        $n = $this->number($v);
+                        if ($n !== null) {
+                            $sumA += $n;
                         }
                     }
+                    if ($sumA > 0) {
+                        return [$sumA, 'archive_daily_sum'];
+                    }
                 }
-            } catch (Throwable $e) {
-                Log::debug('WeatherService: Google geocoding failed.', ['message' => $e->getMessage()]);
             }
+
+            // If archive responded but had no useful data, mark unavailable
+            if (! $resp->successful()) {
+                return [null, 'unavailable'];
+            }
+        } catch (Throwable $e) {
+            Log::debug('WeatherService: archive API failed.', ['message' => $e->getMessage()]);
+
+            return [null, 'unavailable'];
+        }
+
+        return [null, 'unavailable'];
+    }
+
+    private function resolveLocation(float $lat, float $lon): array
+    {
+        $locale = app()->getLocale();
+        $smallPlaces = ['', 'unknown'];
+
+        try {
+            $response = Http::connectTimeout(3)->timeout(6)->get('https://nominatim.openstreetmap.org/reverse', [
+                'lat' => $lat,
+                'lon' => $lon,
+                'format' => 'json',
+                'zoom' => 10,
+                'addressdetails' => 1,
+            ])->throw();
+
+            $address = $response->json('address', []);
+            $city = $address['city'] ?? $address['town'] ?? $address['village'] ?? null;
+            $state = $address['state'] ?? $address['region'] ?? '';
+
+            // If Nominatim returns a small settlement (village/hamlet) and we have a Google Maps key,
+            // consult Google Maps to prefer the larger administrative area instead.
+            if (is_array($address) && (isset($address['village']) || isset($address['hamlet']))) {
+                $mapsKey = config('services.google_maps.key') ?: env('GOOGLE_MAPS_API_KEY');
+                if ($mapsKey) {
+                    try {
+                        $maps = Http::connectTimeout(3)->timeout(6)->get('https://maps.googleapis.com/maps/api/geocode/json', [
+                            'latlng' => $lat.','.$lon,
+                            'key' => $mapsKey,
+                        ])->throw();
+
+                        $results = $maps->json('results', []);
+                        if (! empty($results) && isset($results[0]['address_components']) && is_array($results[0]['address_components'])) {
+                            $components = $results[0]['address_components'];
+                            $town = $this->googleComponent($components, 'administrative_area_level_3')
+                                ?? $this->googleComponent($components, 'administrative_area_level_2')
+                                ?? $this->googleComponent($components, 'locality')
+                                ?? null;
+
+                            $state = $this->googleComponent($components, 'administrative_area_level_1') ?? $state;
+                            if (is_string($town) && $town !== '') {
+                                return $this->formatLocation($town, is_string($state) ? $state : '');
+                            }
+                        }
+                    } catch (Throwable $e) {
+                        Log::debug('WeatherService: Google Maps geocode (village fallback) failed.', ['message' => $e->getMessage()]);
+                    }
+                }
+            }
+
+            if (is_string($city) && $city !== '' && ! in_array($city, $smallPlaces, true)) {
+                return $this->formatLocation($city, is_string($state) ? $state : '');
+            }
+        } catch (Throwable $e) {
+            Log::debug('WeatherService: Nominatim failed.', ['message' => $e->getMessage()]);
         }
 
         try {
             $response = Http::connectTimeout(3)->timeout(6)->get('https://api.bigdatacloud.net/data/reverse-geocode-client', [
-                'latitude'         => $lat,
-                'longitude'        => $lon,
+                'latitude' => $lat,
+                'longitude' => $lon,
                 'localityLanguage' => $locale,
-            ]);
+            ])->throw();
 
-            if ($response->successful()) {
-                $city  = $response->json('city') ?: $response->json('locality');
-                $state = $response->json('principalSubdivision', '');
+            $city = $response->json('city') ?: $response->json('locality');
+            $state = $response->json('principalSubdivision', '');
 
-                if (is_string($city) && $city !== '' && ! in_array($city, $smallPlaces, true)) {
-                    return $this->formatLocation($city, is_string($state) ? $state : '');
-                }
+            if (is_string($city) && $city !== '' && ! in_array($city, $smallPlaces, true)) {
+                return $this->formatLocation($city, is_string($state) ? $state : '');
             }
         } catch (Throwable $e) {
             Log::debug('WeatherService: BigDataCloud failed.', ['message' => $e->getMessage()]);
         }
 
-        return $broaderLocation ?? $this->formatLocation('Detected Location', '');
+        // If Google Maps API key configured, try to fetch place components to prefer larger administrative area
+        try {
+            $mapsKey = config('services.google_maps.key') ?: env('GOOGLE_MAPS_API_KEY');
+            if ($mapsKey) {
+                $maps = Http::connectTimeout(3)->timeout(6)->get('https://maps.googleapis.com/maps/api/geocode/json', [
+                    'latlng' => $lat.','.$lon,
+                    'key' => $mapsKey,
+                ])->throw();
+
+                $results = $maps->json('results', []);
+                if (! empty($results) && isset($results[0]['address_components']) && is_array($results[0]['address_components'])) {
+                    $components = $results[0]['address_components'];
+                    // Prefer administrative area level 3/2 etc. Fall back to locality
+                    $town = $this->googleComponent($components, 'administrative_area_level_3')
+                        ?? $this->googleComponent($components, 'administrative_area_level_2')
+                        ?? $this->googleComponent($components, 'locality')
+                        ?? $this->googleComponent($components, 'sublocality')
+                        ?? null;
+
+                    $state = $this->googleComponent($components, 'administrative_area_level_1') ?? $state;
+
+                    if (is_string($town) && $town !== '' && ! in_array(strtolower($town), $smallPlaces, true)) {
+                        return $this->formatLocation($town, is_string($state) ? $state : '');
+                    }
+                }
+            }
+        } catch (Throwable $e) {
+            Log::debug('WeatherService: Google Maps geocode failed.', ['message' => $e->getMessage()]);
+        }
+
+        return $this->formatLocation('Detected Location', '');
     }
 
-    /** @param array<int, array<string, mixed>> $components */
     private function googleComponent(array $components, string $type): ?string
     {
         foreach ($components as $c) {
@@ -425,17 +367,18 @@ if ($dailyPrecipitation !== null && $dailyPrecipitation > 0) return [$dailyPreci
                 return $c['long_name'];
             }
         }
+
         return null;
     }
 
-    /** @return array{city_name: string, state_name: string, formatted_location: string} */
     private function formatLocation(string $city, string $state): array
     {
-        $city  = $this->cleanLocationName($city);
+        $city = $this->cleanLocationName($city);
         $state = $this->cleanLocationName($state);
+
         return [
-            'city_name'          => $city,
-            'state_name'         => $state,
+            'city_name' => $city,
+            'state_name' => $state,
             'formatted_location' => $state === '' ? $city : $city.', '.$state,
         ];
     }
@@ -443,24 +386,26 @@ if ($dailyPrecipitation !== null && $dailyPrecipitation > 0) return [$dailyPreci
     private function cleanLocationName(string $location): string
     {
         $cleaned = preg_replace('/\s+(tahsil|tehsil|block|district|village)$/i', '', trim($location));
+
         return $cleaned === null || $cleaned === '' ? trim($location) : $cleaned;
     }
 
-    /** @param array<string, mixed> $weather */
     private function logWeather(array $weather, float $lat, float $lon): void
     {
-        if (! is_numeric($weather['humidity']) || ! is_numeric($weather['wind_speed'])) return;
+        if (! isset($weather['humidity']) || ! isset($weather['wind_speed'])) {
+            return;
+        }
 
         try {
             WeatherLog::create([
-                'city'              => $weather['city'],
-                'temperature'       => round((float) $weather['temperature'], 2),
-                'humidity'          => round((float) $weather['humidity'], 2),
-                'rainfall'          => round((float) $weather['precipitation'], 2),
-                'wind_speed'        => round((float) $weather['wind_speed'], 2),
-                'weather_condition' => $weather['weather_condition'],
-                'latitude'          => $lat,
-                'longitude'         => $lon,
+                'city' => $weather['city'] ?? '',
+                'temperature' => round((float) ($weather['temperature'] ?? 0), 2),
+                'humidity' => round((float) ($weather['humidity'] ?? 0), 2),
+                'rainfall' => round((float) ($weather['precipitation'] ?? 0), 2),
+                'wind_speed' => round((float) ($weather['wind_speed'] ?? 0), 2),
+                'weather_condition' => $weather['weather_condition'] ?? null,
+                'latitude' => $lat,
+                'longitude' => $lon,
             ]);
         } catch (Throwable $e) {
             Log::warning('WeatherService: WeatherLog failed.', ['message' => $e->getMessage()]);
@@ -475,386 +420,47 @@ if ($dailyPrecipitation !== null && $dailyPrecipitation > 0) return [$dailyPreci
     private function decodeWeatherCode(int $code): string
     {
         return match (true) {
-            $code === 0                              => 'Clear Sky',
-            in_array($code, [1, 2, 3], true)        => 'Partly Cloudy',
-            in_array($code, [45, 48], true)         => 'Foggy',
-            in_array($code, [51, 53, 55], true)     => 'Drizzle',
-            in_array($code, [61, 63, 65], true)     => 'Rainy',
-            in_array($code, [71, 73, 75], true)     => 'Snowy',
-            in_array($code, [80, 81, 82], true)     => 'Rain Showers',
-            in_array($code, [95, 96, 99], true)     => 'Thunderstorm',
-            default                                  => 'Variable',
-        };
-    }
-
-    private function decodeWindDirection(int $degrees): string
-    {
-        $directions       = ['N', 'NE', 'E', 'SE', 'S', 'SW', 'W', 'NW', 'N'];
-        $normalizedDegrees = (($degrees % 360) + 360) % 360;
-        return $directions[(int) round($normalizedDegrees / 45)];
-    }
-}
-=======
-        return Cache::remember($cacheKey, now()->addMinutes(10), function () use ($lat, $lon) {
-            try {
-                $response = Http::timeout(10)->get('https://api.open-meteo.com/v1/forecast', [
-                    'latitude' => $lat,
-                    'longitude' => $lon,
-                    'current' => 'temperature_2m,relative_humidity_2m,apparent_temperature,rain,weather_code,wind_speed_10m,wind_direction_10m,surface_pressure,visibility',
-                    'hourly' => 'temperature_2m,relative_humidity_2m,weather_code',
-                    'daily' => 'sunrise,sunset,uv_index_max',
-                    'timezone' => 'auto',
-                    'forecast_hours' => 6,
-                ]);
-
-                if ($response->successful()) {
-                    $data = $response->json();
-                    $current = $data['current'];
-                    $daily = $data['daily'] ?? [];
-                    $hourly = $data['hourly'] ?? [];
-
-                    $condition = $this->decodeWeatherCode($current['weather_code'] ?? 0);
-
-                    // Attempt reverse geocoding with 3-tier fallback chain and logging
-                    $location = $this->resolveLocation($lat, $lon);
-                    $city = $location['formatted_location'];
-
-                    // True current precipitation / rain
-                    $actualRain = $current['rain'] ?? 0.0;
-
-                    // Deterministic research-backed annual rainfall estimates by broad region/state
-                    $state = strtolower($location['state_name'] ?? '');
-                    $annualRain = 800; // baseline agricultural parameter (default)
-
-                    if (str_contains($state, 'punjab') || str_contains($state, 'haryana') || str_contains($state, 'delhi')) {
-                        $annualRain = 650;
-                    } elseif (str_contains($state, 'rajasthan')) {
-                        $annualRain = 420;
-                    } elseif (str_contains($state, 'uttar pradesh') || str_contains($state, 'bihar') || str_contains($state, 'jharkhand')) {
-                        $annualRain = 1050;
-                    } elseif (str_contains($state, 'west bengal') || str_contains($state, 'assam') || str_contains($state, 'meghalaya') || str_contains($state, 'tripura') || str_contains($state, 'nagaland') || str_contains($state, 'manipur') || str_contains($state, 'mizoram') || str_contains($state, 'arunachal')) {
-                        $annualRain = 2000;
-                    } elseif (str_contains($state, 'kerala') || str_contains($state, 'goa') || str_contains($state, 'karnataka')) {
-                        $annualRain = 2600;
-                    } elseif (str_contains($state, 'maharashtra') || str_contains($state, 'gujarat') || str_contains($state, 'madhya pradesh') || str_contains($state, 'chhattisgarh')) {
-                        $annualRain = 975;
-                    } elseif (str_contains($state, 'tamil nadu') || str_contains($state, 'andhra pradesh') || str_contains($state, 'telangana') || str_contains($state, 'odisha')) {
-                        $annualRain = 925;
-                    } elseif (str_contains($state, 'himachal') || str_contains($state, 'uttarakhand') || str_contains($state, 'jammu')) {
-                        $annualRain = 1300;
-                    } else {
-                        // Fallback estimation based on humidity and temperature (deterministic)
-                        $baseRain = ($current['relative_humidity_2m'] ?? 60) * 10;
-                        $tempRain = max(0, (30 - ($current['temperature_2m'] ?? 25))) * 20;
-                        $annualRain = (int) round($baseRain + $tempRain + 300);
-                    }
-
-                    // Bound annual rain between agricultural suitability boundaries
-                    $annualRain = max(300, min(3500, (int) round($annualRain)));
-
-                    // Log accurate current weather parameters to database
-                    WeatherLog::create([
-                        'city' => $city,
-                        'temperature' => isset($current['temperature_2m']) ? (int) round($current['temperature_2m']) : null,
-                        'humidity' => isset($current['relative_humidity_2m']) ? (int) round($current['relative_humidity_2m']) : null,
-                        'rainfall' => isset($actualRain) ? (int) round($actualRain) : 0,
-                        'wind_speed' => isset($current['wind_speed_10m']) ? (int) round($current['wind_speed_10m']) : 0,
-                        'weather_condition' => $condition,
-                        'latitude' => $lat,
-                        'longitude' => $lon,
-                    ]);
-
-                    return [
-                        'temperature' => isset($current['temperature_2m']) ? (int) round($current['temperature_2m']) : null,
-                        'apparent_temperature' => isset($current['apparent_temperature']) ? (int) round($current['apparent_temperature']) : (isset($current['temperature_2m']) ? (int) round($current['temperature_2m']) : null),
-                        'humidity' => isset($current['relative_humidity_2m']) ? (int) round($current['relative_humidity_2m']) : null,
-                        'rain' => isset($actualRain) ? (int) round($actualRain) : 0,
-                        'annual_rain' => $annualRain,
-                        'wind_speed' => isset($current['wind_speed_10m']) ? (int) round($current['wind_speed_10m']) : 0,
-                        'wind_direction' => $this->decodeWindDirection($current['wind_direction_10m'] ?? 0),
-                        'pressure' => isset($current['surface_pressure']) ? (int) round($current['surface_pressure']) : 1013,
-                        'visibility' => isset($current['visibility']) ? (int) round($current['visibility'] / 1000) : 10,
-                        'uv_index' => isset($daily['uv_index_max'][0]) ? (int) round($daily['uv_index_max'][0]) : 5,
-                        'sunrise' => isset($daily['sunrise'][0]) ? date('h:i A', strtotime($daily['sunrise'][0])) : '6:00 AM',
-                        'sunset' => isset($daily['sunset'][0]) ? date('h:i A', strtotime($daily['sunset'][0])) : '6:30 PM',
-                        'weather_condition' => $condition,
-                        'city' => $city,
-                        'city_name' => $location['city_name'],
-                        'state_name' => $location['state_name'],
-                        'formatted_location' => $location['formatted_location'],
-                        'success' => true,
-                        // Provide next 5 hours of forecast (rounded integers)
-                        'hourly' => array_map(function ($t, $h, $c) {
-                            return [
-                                'time' => date('h A', strtotime($t)),
-                                'temp' => isset($h) ? (int) round($h) : null,
-                                'condition' => $this->decodeWeatherCode($c),
-                            ];
-                        }, array_slice($hourly['time'] ?? [], 1, 5), array_slice($hourly['temperature_2m'] ?? [], 1, 5), array_slice($hourly['weather_code'] ?? [], 1, 5)),
-                    ];
-                }
-            } catch (\Exception $e) {
-                Log::error('Weather API Error: '.$e->getMessage());
-            }
-
-            // --- 2-Tier Resilient Geocoded Database/Default Fallback System ---
-            try {
-                // Tier 1 Fallback: Find closest weather log logged in last 3 days within 0.5 degrees
-                $fallback = WeatherLog::whereBetween('latitude', [$lat - 0.5, $lat + 0.5])
-                    ->whereBetween('longitude', [$lon - 0.5, $lon + 0.5])
-                    ->where('created_at', '>=', now()->subDays(3))
-                    ->latest()
-                    ->first();
-
-                if ($fallback) {
-                    Log::info('Weather API offline. Using geocoded local fallback log for: '.$fallback->city);
-
-                    return [
-                        'temperature' => $fallback->temperature,
-                        'apparent_temperature' => $fallback->temperature,
-                        'humidity' => $fallback->humidity,
-                        'rain' => $fallback->rainfall,
-                        'annual_rain' => 750, // default crop suitability annual parameter
-                        'wind_speed' => $fallback->wind_speed,
-                        'wind_direction' => 'N',
-                        'pressure' => 1013,
-                        'visibility' => 10,
-                        'uv_index' => 5,
-                        'sunrise' => '6:00 AM',
-                        'sunset' => '6:30 PM',
-                        'weather_condition' => $fallback->weather_condition,
-                        'city' => $fallback->city,
-                        'city_name' => $fallback->city,
-                        'state_name' => '',
-                        'formatted_location' => $fallback->city,
-                        'success' => true,
-                        'cached' => true,
-                        'hourly' => [
-                            ['time' => '1 hr later', 'temp' => $fallback->temperature, 'condition' => $fallback->weather_condition],
-                            ['time' => '2 hr later', 'temp' => $fallback->temperature - 1, 'condition' => $fallback->weather_condition],
-                            ['time' => '3 hr later', 'temp' => $fallback->temperature - 2, 'condition' => $fallback->weather_condition],
-                        ],
-                    ];
-                }
-            } catch (\Exception $dbEx) {
-                Log::error('Weather Database Fallback Error: '.$dbEx->getMessage());
-            }
-
-            // Tier 2 Fallback: Research-backed default regional parameters (e.g. New Delhi defaults)
-            Log::warning('Weather API and Database Fallbacks offline. Returning regional default parameters.');
-
-            return [
-                'temperature' => 28.5,
-                'apparent_temperature' => 30.0,
-                'humidity' => 60,
-                'rain' => 0.0,
-                'annual_rain' => 800,
-                'wind_speed' => 12.0,
-                'wind_direction' => 'NW',
-                'pressure' => 1011,
-                'visibility' => 8.0,
-                'uv_index' => 6,
-                'sunrise' => '05:45 AM',
-                'sunset' => '06:45 PM',
-                'weather_condition' => 'Clear Sky',
-                'city' => 'New Delhi, Delhi',
-                'city_name' => 'New Delhi',
-                'state_name' => 'Delhi',
-                'formatted_location' => 'New Delhi, Delhi',
-                'success' => true,
-                'is_default' => true,
-                'hourly' => [
-                    ['time' => '1 hr later', 'temp' => 28.0, 'condition' => 'Clear Sky'],
-                    ['time' => '2 hr later', 'temp' => 27.0, 'condition' => 'Clear Sky'],
-                    ['time' => '3 hr later', 'temp' => 26.0, 'condition' => 'Clear Sky'],
-                ],
-            ];
-        });
-    }
-
-    /**
-     * Resolve location with 3-tier fallback chain and structured logging.
-     */
-    private function resolveLocation(float $lat, float $lon): array
-    {
-        Log::info("Attempting reverse geocoding for coordinates: Lat=$lat, Lon=$lon");
-        $locale = app()->getLocale();
-
-        // --- Tier 1: OpenStreetMap Nominatim ---
-        try {
-            Log::info('Tier 1: Querying OpenStreetMap Nominatim...');
-            $response = Http::timeout(5)
-                ->withHeaders([
-                    'User-Agent' => 'CropYieldPortal/1.0 (ayush@example.com)',
-                    'Accept-Language' => $locale.',en;q=0.9',
-                ])
-                ->get('https://nominatim.openstreetmap.org/reverse', [
-                    'lat' => $lat,
-                    'lon' => $lon,
-                    'format' => 'json',
-                ]);
-
-            if ($response->successful()) {
-                $data = $response->json();
-                Log::info('Tier 1 OSM Response Successful.', ['data' => $data]);
-
-                $address = $data['address'] ?? [];
-
-                // Priority: village > locality > town > city > district
-                $city_name = $address['village']
-                    ?? $address['suburb']
-                    ?? $address['neighbourhood']
-                    ?? $address['hamlet']
-                    ?? $address['town']
-                    ?? $address['city']
-                    ?? $address['city_district']
-                    ?? $address['district']
-                    ?? $address['county']
-                    ?? null;
-
-                $state_name = $address['state'] ?? $address['state_district'] ?? null;
-
-                if ($city_name) {
-                    $formatted = $state_name ? "$city_name, $state_name" : $city_name;
-                    Log::info('Tier 1 Resolved successfully.', [
-                        'city_name' => $city_name,
-                        'state_name' => $state_name,
-                        'formatted' => $formatted,
-                    ]);
-
-                    return [
-                        'city_name' => $city_name,
-                        'state_name' => $state_name ?? '',
-                        'formatted_location' => $formatted,
-                    ];
-                }
-
-                Log::warning('Tier 1 parsed address was incomplete, attempting fallback...');
-            } else {
-                Log::warning('Tier 1 query failed with status: '.$response->status());
-            }
-        } catch (\Exception $e) {
-            Log::warning('Tier 1 OSM Geocoder threw exception: '.$e->getMessage());
-        }
-
-        // --- Tier 2: BigDataCloud Reverse Geocoding Client API ---
-        try {
-            Log::info('Tier 2: Querying BigDataCloud client API...');
-            $response = Http::timeout(5)
-                ->get('https://api.bigdatacloud.net/data/reverse-geocode-client', [
-                    'latitude' => $lat,
-                    'longitude' => $lon,
-                    'localityLanguage' => $locale,
-                ]);
-
-            if ($response->successful()) {
-                $data = $response->json();
-                Log::info('Tier 2 BigDataCloud Response Successful.', ['data' => $data]);
-
-                $city_name = $data['locality'] ?? $data['city'] ?? null;
-                $state_name = $data['principalSubdivision'] ?? null;
-
-                if ($city_name) {
-                    $formatted = $state_name ? "$city_name, $state_name" : $city_name;
-                    Log::info('Tier 2 Resolved successfully.', [
-                        'city_name' => $city_name,
-                        'state_name' => $state_name,
-                        'formatted' => $formatted,
-                    ]);
-
-                    return [
-                        'city_name' => $city_name,
-                        'state_name' => $state_name ?? '',
-                        'formatted_location' => $formatted,
-                    ];
-                }
-
-                Log::warning('Tier 2 parsed location was incomplete, attempting fallback...');
-            } else {
-                Log::warning('Tier 2 query failed with status: '.$response->status());
-            }
-        } catch (\Exception $e) {
-            Log::warning('Tier 2 BigDataCloud Geocoder threw exception: '.$e->getMessage());
-        }
-
-        // --- Tier 3: Nominatim backup URL with simplified parameters ---
-        try {
-            Log::info('Tier 3: Querying Nominatim backup service...');
-            $response = Http::timeout(5)
-                ->get('https://nominatim.openstreetmap.org/reverse', [
-                    'lat' => $lat,
-                    'lon' => $lon,
-                    'format' => 'json',
-                    'zoom' => 10,
-                ]);
-
-            if ($response->successful()) {
-                $data = $response->json();
-                Log::info('Tier 3 OSM Response Successful.', ['data' => $data]);
-
-                $address = $data['address'] ?? [];
-
-                $city_name = $address['county']
-                    ?? $address['state_district']
-                    ?? $address['city']
-                    ?? null;
-                $state_name = $address['state'] ?? null;
-
-                if ($city_name) {
-                    $formatted = $state_name ? "$city_name, $state_name" : $city_name;
-                    Log::info('Tier 3 Resolved successfully.', [
-                        'city_name' => $city_name,
-                        'state_name' => $state_name,
-                        'formatted' => $formatted,
-                    ]);
-
-                    return [
-                        'city_name' => $city_name,
-                        'state_name' => $state_name ?? '',
-                        'formatted_location' => $formatted,
-                    ];
-                }
-            }
-        } catch (\Exception $e) {
-            Log::warning('Tier 3 Geocoder failed: '.$e->getMessage());
-        }
-
-        // --- Fallback of Last Resort ---
-        Log::error('All reverse geocoders failed. Falling back to default values.');
-
-        return [
-            'city_name' => 'Patiala',
-            'state_name' => 'Punjab',
-            'formatted_location' => 'Patiala, Punjab',
-        ];
-    }
-
-    /**
-     * Decode Open-Meteo WMO weather codes into human-readable conditions.
-     */
-    private function decodeWeatherCode(int $code): string
-    {
-        return match (true) {
             $code === 0 => 'Clear Sky',
-            in_array($code, [1, 2, 3]) => 'Partly Cloudy',
-            in_array($code, [45, 48]) => 'Foggy',
-            in_array($code, [51, 53, 55]) => 'Drizzle',
-            in_array($code, [61, 63, 65]) => 'Rainy',
-            in_array($code, [71, 73, 75]) => 'Snowy',
-            in_array($code, [80, 81, 82]) => 'Rain Showers',
-            in_array($code, [95, 96, 99]) => 'Thunderstorm',
+            in_array($code, [1, 2, 3], true) => 'Partly Cloudy',
+            in_array($code, [45, 48], true) => 'Foggy',
+            in_array($code, [51, 53, 55], true) => 'Drizzle',
+            in_array($code, [61, 63, 65], true) => 'Rainy',
+            in_array($code, [71, 73, 75], true) => 'Snowy',
+            in_array($code, [80, 81, 82], true) => 'Rain Showers',
+            in_array($code, [95, 96, 99], true) => 'Thunderstorm',
             default => 'Variable',
         };
     }
 
-    /**
-     * Decode wind direction in degrees to compass point.
-     */
     private function decodeWindDirection(int $degrees): string
     {
         $directions = ['N', 'NE', 'E', 'SE', 'S', 'SW', 'W', 'NW', 'N'];
+        $normalized = (($degrees % 360) + 360) % 360;
 
-        return $directions[round(($degrees % 360) / 45)];
+        return $directions[(int) round($normalized / 45)];
+    }
+
+    private function hourlyForecast(array $data, ?int $currentIndex): array
+    {
+        $hourly = $data['hourly'] ?? [];
+        $times = $hourly['time'] ?? [];
+        $result = [];
+
+        // Determine the starting index (next hours after currentIndex)
+        $start = 0;
+        if (is_int($currentIndex)) {
+            $start = $currentIndex + 1;
+        }
+
+        for ($i = $start; $i < count($times) && count($result) < 5; $i++) {
+            $result[] = [
+                'time' => $times[$i],
+                'temp' => $this->number($hourly['temperature_2m'][$i] ?? null),
+                'rain' => $this->number($hourly['precipitation'][$i] ?? null),
+                'weather_code' => $this->number($hourly['weathercode'][$i] ?? $hourly['weather_code'][$i] ?? null),
+            ];
+        }
+
+        return $result;
     }
 }
->>>>>>> ad0ccee2af44b30e9d0ff7fdf2eb6cb6db219755

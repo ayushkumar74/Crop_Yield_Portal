@@ -58,10 +58,6 @@
             {{ __('messages.weather_auto_loading') }}
         </div>
 
-<<<<<<< HEAD
-        {{-- ✅ THIS is where the JS-rendered weather card appears --}}
-=======
->>>>>>> ad0ccee2af44b30e9d0ff7fdf2eb6cb6db219755
         <div id="weather-status" class="mt-2"></div>
     </div>
 
@@ -165,8 +161,4 @@ new Chart(document.getElementById('humidityChart'), {
     }, options: baseOpts
 });
 </script>
-<<<<<<< HEAD
 @endpush
-=======
-@endpush
->>>>>>> ad0ccee2af44b30e9d0ff7fdf2eb6cb6db219755

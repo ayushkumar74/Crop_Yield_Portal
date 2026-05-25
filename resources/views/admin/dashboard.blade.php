@@ -65,7 +65,6 @@
             <p class="font-semibold text-gray-900 dark:text-white text-sm">All Predictions</p>
             <p class="text-xs text-gray-500 dark:text-gray-400 mt-0.5">Browse & manage</p>
         </a>
-<<<<<<< HEAD
         <a href="{{ route('admin.tickets') }}" class="stat-card hover:border-emerald-300 dark:hover:border-emerald-700 transition-colors">
             <svg class="w-5 h-5 text-emerald-600 dark:text-emerald-400 mb-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M18 9v3m0 0v3m0-3h3m-3 0h-3m-2-5a4 4 0 11-8 0 4 4 0 018 0zM3 20a6 6 0 0112 0v1H3v-1z"/>
@@ -73,9 +72,7 @@
             <p class="font-semibold text-gray-900 dark:text-white text-sm">Support Tickets</p>
             <p class="text-xs text-gray-500 dark:text-gray-400 mt-0.5">Manage customer issues</p>
         </a>
-=======
     </div>
->>>>>>> ad0ccee2af44b30e9d0ff7fdf2eb6cb6db219755
 
     {{-- Recent Predictions --}}
     <div class="stat-card overflow-hidden p-0">

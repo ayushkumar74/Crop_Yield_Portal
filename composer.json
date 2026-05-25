@@ -11,10 +11,7 @@
     "require": {
         "php": "^8.2",
         "laravel/framework": "^12.0",
-<<<<<<< HEAD
         "laravel/socialite": "^5.27",
-=======
->>>>>>> ad0ccee2af44b30e9d0ff7fdf2eb6cb6db219755
         "laravel/tinker": "^2.10.1"
     },
     "require-dev": {
@@ -93,8 +90,4 @@
     },
     "minimum-stability": "stable",
     "prefer-stable": true
-<<<<<<< HEAD
 }
-=======
-}
->>>>>>> ad0ccee2af44b30e9d0ff7fdf2eb6cb6db219755

@@ -20,7 +20,7 @@ class LoginOtpMail extends Mailable
     public function envelope(): Envelope
     {
         return new Envelope(
-            subject: 'Your Crop Yield Portal Login Code – ' . $this->otp,
+            subject: 'Your Crop Yield Portal Login Code – '.$this->otp,
         );
     }
 

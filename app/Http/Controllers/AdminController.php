@@ -2,17 +2,18 @@
 
 namespace App\Http\Controllers;
 
+use App\Mail\TicketResolvedMail;
 use App\Models\Crop;
 use App\Models\Prediction;
+use App\Models\SupportTicket;
 use App\Models\User;
 use App\Models\WeatherLog;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Mail;
 
 class AdminController extends Controller
 {
-    /**
-     * Admin overview dashboard.
-     */
+    // Admin overview
     public function index()
     {
         $stats = [
@@ -20,22 +21,15 @@ class AdminController extends Controller
             'total_predictions' => Prediction::count(),
             'total_crops' => Crop::count(),
             'total_weather_logs' => WeatherLog::count(),
-<<<<<<< HEAD
-            'total_tickets' => \App\Models\SupportTicket::count(),
-            'open_tickets' => \App\Models\SupportTicket::where('status', 'open')->count(),
-=======
->>>>>>> ad0ccee2af44b30e9d0ff7fdf2eb6cb6db219755
+            'total_tickets' => SupportTicket::count(),
+            'open_tickets' => SupportTicket::where('status', 'open')->count(),
         ];
 
         $recentPredictions = Prediction::with(['crop', 'user'])->latest()->limit(10)->get();
         $recentUsers = User::latest()->limit(5)->get();
 
-        // Chart data — predictions per crop
-        $cropPredictions = Prediction::with('crop')->get()
-            ->groupBy(fn ($p) => $p->crop->name ?? 'Unknown')
-            ->map->count();
+        $cropPredictions = Prediction::with('crop')->get()->groupBy(fn ($p) => $p->crop->name ?? 'Unknown')->map->count();
 
-        // Risk distribution
         $riskData = [
             'Low' => Prediction::where('risk_level', 'Low')->count(),
             'Medium' => Prediction::where('risk_level', 'Medium')->count(),
@@ -45,8 +39,7 @@ class AdminController extends Controller
         return view('admin.dashboard', compact('stats', 'recentPredictions', 'recentUsers', 'cropPredictions', 'riskData'));
     }
 
-    // ─── Crop CRUD ───────────────────────────────────────────────────────────────
-
+    // Crop CRUD
     public function cropIndex()
     {
         $crops = Crop::withCount('predictions')->latest()->paginate(15);
@@ -108,14 +101,10 @@ class AdminController extends Controller
         return redirect()->route('admin.crops')->with('success', "Crop '{$name}' deleted.");
     }
 
-    // ─── User Management ─────────────────────────────────────────────────────────
-
+    // User management
     public function users()
     {
-        $users = User::withCount('predictions')
-            ->with('latestPrediction.crop')
-            ->latest()
-            ->paginate(15);
+        $users = User::withCount('predictions')->with('latestPrediction.crop')->latest()->paginate(15);
 
         return view('admin.users', compact('users'));
     }
@@ -123,27 +112,22 @@ class AdminController extends Controller
     public function showUser(User $user)
     {
         $user->loadCount('predictions');
-
-        // Individual prediction history paginated
         $predictions = $user->predictions()->with('crop')->latest()->paginate(10, ['*'], 'predictions_page');
 
-        // Crop-wise stats breakdown
-        $cropWiseStats = $user->predictions()->with('crop')->get()
-            ->groupBy('crop_id')
-            ->map(function ($group) {
-                $first = $group->first();
+        $cropWiseStats = $user->predictions()->with('crop')->get()->groupBy('crop_id')->map(function ($group) {
+            $first = $group->first();
 
-                return [
-                    'crop_id' => $first->crop_id,
-                    'crop_name' => $first->crop->translated_crop_name ?? $first->crop->name ?? 'Unknown',
-                    'count' => $group->count(),
-                    'avg_yield' => round($group->avg('predicted_yield'), 2),
-                    'avg_suitability' => round($group->avg('suitability_score'), 1),
-                    'low_risk_count' => $group->where('risk_level', 'Low')->count(),
-                    'med_risk_count' => $group->where('risk_level', 'Medium')->count(),
-                    'high_risk_count' => $group->where('risk_level', 'High')->count(),
-                ];
-            })->values();
+            return [
+                'crop_id' => $first->crop_id,
+                'crop_name' => $first->crop->translated_crop_name ?? $first->crop->name ?? 'Unknown',
+                'count' => $group->count(),
+                'avg_yield' => round($group->avg('predicted_yield'), 2),
+                'avg_suitability' => round($group->avg('suitability_score'), 1),
+                'low_risk_count' => $group->where('risk_level', 'Low')->count(),
+                'med_risk_count' => $group->where('risk_level', 'Medium')->count(),
+                'high_risk_count' => $group->where('risk_level', 'High')->count(),
+            ];
+        })->values();
 
         return view('admin.show_user', compact('user', 'predictions', 'cropWiseStats'));
     }
@@ -160,7 +144,6 @@ class AdminController extends Controller
         if ($user->id === auth()->id()) {
             return redirect()->route('admin.users')->with('error', 'You cannot delete your own account.');
         }
-
         $user->delete();
 
         return redirect()->route('admin.users')->with('success', "User '{$user->name}' has been removed.");
@@ -169,7 +152,6 @@ class AdminController extends Controller
     public function destroyPrediction(Prediction $prediction)
     {
         $prediction->delete();
-
         $referer = request()->headers->get('referer');
         if ($referer && str_contains($referer, '/predictions/'.$prediction->id)) {
             return redirect()->route('predictions.index')->with('success', __('messages.prediction_delete_success'));
@@ -177,85 +159,50 @@ class AdminController extends Controller
 
         return back()->with('success', __('messages.prediction_delete_success'));
     }
-<<<<<<< HEAD
 
-    // ─── Support Ticket Management ────────────────────────────────────────────
-
-    /**
-     * Display all support tickets.
-     */
+    // Support ticket management
     public function ticketsIndex()
     {
-        $tickets = \App\Models\SupportTicket::with('user')
-            ->latest()
-            ->paginate(15);
-
-        // No debug logging — normal admin retrieval
-
+        $tickets = SupportTicket::with('user')->latest()->paginate(15);
         $stats = [
-            'total' => \App\Models\SupportTicket::count(),
-            'open' => \App\Models\SupportTicket::where('status', 'open')->count(),
-            'in_progress' => \App\Models\SupportTicket::where('status', 'in_progress')->count(),
-            'resolved' => \App\Models\SupportTicket::where('status', 'resolved')->count(),
+            'total' => SupportTicket::count(),
+            'open' => SupportTicket::where('status', 'open')->count(),
+            'in_progress' => SupportTicket::where('status', 'in_progress')->count(),
+            'resolved' => SupportTicket::where('status', 'resolved')->count(),
         ];
 
         return view('admin.tickets.index', compact('tickets', 'stats'));
     }
 
-    /**
-     * Show a single support ticket.
-     */
-    public function showTicket(\App\Models\SupportTicket $ticket)
+    public function showTicket(SupportTicket $ticket)
     {
         return view('admin.tickets.show', compact('ticket'));
     }
 
-    /**
-     * Update ticket status.
-     */
-    public function updateTicketStatus(\App\Models\SupportTicket $ticket, Request $request)
+    public function updateTicketStatus(SupportTicket $ticket, Request $request)
     {
-        $validated = $request->validate([
-            'status' => 'required|in:open,in_progress,resolved,closed',
-        ]);
-
-        $ticket->update([
-            'status' => $validated['status'],
-        ]);
+        $validated = $request->validate(['status' => 'required|in:open,in_progress,resolved,closed']);
+        $ticket->update(['status' => $validated['status']]);
 
         return back()->with('success', 'Ticket status updated successfully.');
     }
 
-    /**
-     * Resolve ticket and send email notification.
-     */
-    public function resolveTicket(\App\Models\SupportTicket $ticket, Request $request)
+    public function resolveTicket(SupportTicket $ticket, Request $request)
     {
-        $validated = $request->validate([
-            'admin_response' => 'required|string|min:10|max:5000',
-        ]);
+        $validated = $request->validate(['admin_response' => 'required|string|min:10|max:5000']);
 
-        $ticket->update([
-            'status' => 'resolved',
-            'admin_response' => $validated['admin_response'],
-            'resolved_at' => now(),
-            'assigned_to' => auth()->id(),
-        ]);
+        $ticket->update(['status' => 'resolved', 'admin_response' => $validated['admin_response'], 'resolved_at' => now(), 'assigned_to' => auth()->id()]);
 
-        // Send resolution email
         try {
-            // Send support resolution notice using dedicated support mailer
-            \Illuminate\Support\Facades\Mail::mailer('support')
+            Mail::mailer('support')
                 ->to($ticket->user->email)
-                ->send((new \App\Mail\TicketResolvedMail($ticket))
+                ->send((new TicketResolvedMail($ticket))
                     ->from(env('SUPPORT_MAIL_FROM_ADDRESS', 'support.cropyield@gmail.com'), env('SUPPORT_MAIL_FROM_NAME', env('APP_NAME')))
                 );
         } catch (\Exception $e) {
-            \Log::error('Failed to send ticket resolution email: ' . $e->getMessage());
+            \Log::error('Failed to send ticket resolution email: '.$e->getMessage());
         }
 
         return back()->with('success', 'Ticket resolved and user notified via email.');
     }
-=======
->>>>>>> ad0ccee2af44b30e9d0ff7fdf2eb6cb6db219755
 }

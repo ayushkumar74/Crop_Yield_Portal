@@ -22,7 +22,6 @@
     {{-- Vite: CSS + JS --}}
     @vite(['resources/css/app.css', 'resources/js/app.js'])
 
-<<<<<<< HEAD
     {{-- Google Maps Geocoding API (for precise location reverse geocoding) --}}
     <script>
         // Configure Google Maps API key from environment or meta tag
@@ -34,8 +33,6 @@
         }
     </script>
 
-=======
->>>>>>> ad0ccee2af44b30e9d0ff7fdf2eb6cb6db219755
     {{-- Dark Mode Immediate Blocking Script --}}
     <script>
         (function () {
@@ -63,13 +60,8 @@
         })();
     </script>
 
-<<<<<<< HEAD
     {{-- Favicon SVG (Clean wheat icon) --}}
     <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 32 32%22 fill=%22none%22><path d=%22M16 4V26%22 stroke=%22%2310b981%22 stroke-width=%222%22 stroke-linecap=%22round%22 stroke-linejoin=%22round%22/><g stroke=%22%2310b981%22 stroke-width=%221.5%22 stroke-linecap=%22round%22 stroke-linejoin=%22round%22 fill=%22none%22><path d=%22M12 8L10 6%22/><path d=%22M11 10L8 9%22/><path d=%22M11 13L8 14%22/><path d=%22M12 16L10 18%22/></g><g stroke=%22%2310b981%22 stroke-width=%221.5%22 stroke-linecap=%22round%22 stroke-linejoin=%22round%22 fill=%22none%22><path d=%22M20 8L22 6%22/><path d=%22M21 10L24 9%22/><path d=%22M21 13L24 14%22/><path d=%22M20 16L22 18%22/></g><g stroke=%22%2310b981%22 stroke-width=%221.5%22 stroke-linecap=%22round%22 stroke-linejoin=%22round%22 fill=%22none%22><path d=%22M16 4L16 8%22/><path d=%22M14 6L16 7%22/><path d=%22M18 6L16 7%22/></g><circle cx=%2216%22 cy=%2228%22 r=%222%22 fill=%22%2310b981%22 opacity=%220.6%22/><path d=%22M14 27L18 27%22 stroke=%22%2310b981%22 stroke-width=%221%22 stroke-linecap=%22round%22 opacity=%220.4%22/></svg>">
-=======
-    {{-- Favicon SVG --}}
-    <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 24 24%22 fill=%22none%22><path d=%22M7 20h10%22 stroke=%22%2316a34a%22 stroke-width=%222%22 stroke-linecap=%22round%22 stroke-linejoin=%22round%22/><path d=%22M10 20c5.5-2.5 8-6.4 8-12a4 4 0 0 0-8 0c0 5.6 2.5 9.5 8 12Z%22 stroke=%22%2316a34a%22 stroke-width=%222%22 stroke-linecap=%22round%22 stroke-linejoin=%22round%22 fill=%22%2316a34a%22 fill-opacity=%220.15%22/><path d=%22M10 12.1C8.4 10.7 7 8 7 8s2-1.1 3.5.3c1.5 1.3 2 4.1 2 4.1s-1 .5-2.5-.3Z%22 stroke=%22%2316a34a%22 stroke-width=%222%22 stroke-linecap=%22round%22 stroke-linejoin=%22round%22/></svg>">
->>>>>>> ad0ccee2af44b30e9d0ff7fdf2eb6cb6db219755
 
     {{-- Chart.js --}}
     <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
@@ -78,10 +70,9 @@
 </head>
 <body class="antialiased dark:bg-gray-900 transition-colors duration-200">
 
-    {{-- ─── Navbar ──────────────────────────────────────────────────────────── --}}
+    {{-- ─── Navbar --}}
     <nav class="glass-nav sticky top-0 z-50">
-<<<<<<< HEAD
-        <div class="max-w-7xl mx-auto px-4 sm:px-6 h-10 flex items-center justify-between gap-3">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 h-12 flex items-center justify-between gap-2">
 
             {{-- Logo --}}
             <x-app-logo href="{{ route('home') }}" size="md" />
@@ -98,37 +89,6 @@
                     {{ __('messages.nav_weather') }}
                 </a>
                 <a href="{{ auth()->check() ? route('predictions.index') : route('login') }}" class="nav-link px-2 py-1 {{ request()->routeIs('predictions.index') ? 'active' : '' }}">
-=======
-        <div class="max-w-7xl mx-auto px-4 sm:px-6 h-14 flex items-center justify-between gap-4">
-
-            {{-- Logo --}}
-            <a href="{{ route('home') }}" class="flex items-center gap-2 flex-shrink-0 text-decoration-none">
-                <div class="flex items-center justify-center flex-shrink-0 text-green-600 dark:text-green-500">
-                    <svg class="w-8 h-8" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-                        <path d="M10 20c5.5-2.5 8-6.4 8-12a4 4 0 0 0-8 0c0 5.6 2.5 9.5 8 12Z" fill="currentColor" fill-opacity="0.15"/>
-                        <path d="M7 20h10" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
-                        <path d="M10 20c5.5-2.5 8-6.4 8-12a4 4 0 0 0-8 0c0 5.6 2.5 9.5 8 12Z" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
-                        <path d="M10 12.1C8.4 10.7 7 8 7 8s2-1.1 3.5.3c1.5 1.3 2 4.1 2 4.1s-1 .5-2.5-.3Z" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
-                    </svg>
-                </div>
-                <span class="font-bold text-base tracking-tight text-gray-900 dark:text-white">
-                    {{ __('messages.app_name') === 'फसल उपज पोर्टल' ? 'फसल उपज' : 'CropYield' }}
-                </span>
-            </a>
-
-            {{-- Desktop Nav Links --}}
-            <div class="hidden lg:flex items-center gap-1">
-                <a href="{{ route('home') }}" class="nav-link {{ request()->routeIs('home') ? 'active' : '' }}">
-                    {{ __('messages.nav_home') }}
-                </a>
-                <a href="{{ auth()->check() ? route('predictions.create') : route('login') }}" class="nav-link {{ request()->routeIs('predictions.create') ? 'active' : '' }}">
-                    {{ __('messages.nav_predict') }}
-                </a>
-                <a href="{{ auth()->check() ? route('weather') : route('login') }}" class="nav-link {{ request()->routeIs('weather') ? 'active' : '' }}">
-                    {{ __('messages.nav_weather') }}
-                </a>
-                <a href="{{ auth()->check() ? route('predictions.index') : route('login') }}" class="nav-link {{ request()->routeIs('predictions.index') ? 'active' : '' }}">
->>>>>>> ad0ccee2af44b30e9d0ff7fdf2eb6cb6db219755
                     {{ __('messages.nav_history') }}
                 </a>
                 @auth
@@ -144,37 +104,22 @@
             <div class="flex items-center gap-2">
 
                 @guest
-<<<<<<< HEAD
                     <a href="{{ route('login') }}" class="nav-link hidden sm:block px-2 py-1 rounded-md hover:bg-gray-50 dark:hover:bg-gray-800 text-sm">
                         {{ __('messages.nav_login') }}
                     </a>
                     <a href="{{ route('register') }}" class="inline-flex items-center gap-1 text-sm font-semibold text-emerald-500 border border-transparent hover:bg-emerald-50 px-2 py-1 rounded-md">
-=======
-                    <a href="{{ route('login') }}" class="nav-link hidden sm:block px-3 py-1.5 rounded-md hover:bg-gray-100 dark:hover:bg-gray-700">
-                        {{ __('messages.nav_login') }}
-                    </a>
-                    <a href="{{ route('register') }}" class="btn-primary text-xs py-1.5 px-3">
->>>>>>> ad0ccee2af44b30e9d0ff7fdf2eb6cb6db219755
                         {{ __('messages.nav_register') }}
                     </a>
 
                     {{-- Guest Settings Dropdown --}}
                     <div class="relative inline-block text-left">
                         <button id="guest-settings-btn" onclick="toggleGuestSettings(event)"
-<<<<<<< HEAD
                             class="w-7 h-7 rounded-md border border-gray-200 dark:border-gray-600 text-gray-500 dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-gray-750 flex items-center justify-center transition-colors cursor-pointer select-none text-sm"
-=======
-                            class="w-8 h-8 rounded-lg border border-gray-200 dark:border-gray-600 text-gray-500 dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-gray-750 flex items-center justify-center transition-colors cursor-pointer select-none"
->>>>>>> ad0ccee2af44b30e9d0ff7fdf2eb6cb6db219755
                             aria-label="Application settings">
                             ⚙️
                         </button>
 
-<<<<<<< HEAD
                         <div id="guest-settings-menu" class="hidden absolute right-0 mt-2 w-56 rounded-md border border-gray-100 dark:border-gray-800 bg-white dark:bg-gray-900 py-1 z-50 transform transition-all opacity-0 translate-y-1 pointer-events-none scale-95 duration-150">
-=======
-                        <div id="guest-settings-menu" class="hidden absolute right-0 mt-2 w-60 rounded-xl border border-gray-100 dark:border-gray-800 bg-white dark:bg-gray-900 shadow-xl py-1.5 z-50 transform transition-all opacity-0 translate-y-1 pointer-events-none scale-95 duration-150">
->>>>>>> ad0ccee2af44b30e9d0ff7fdf2eb6cb6db219755
                             {{-- Theme Toggle --}}
                             <div class="px-4 py-2 flex items-center justify-between">
                                 <span class="text-[13px] font-medium text-gray-700 dark:text-gray-300 flex items-center gap-2.5">
@@ -203,55 +148,31 @@
                     @auth
                         <div class="relative inline-block text-left">
                             <button id="profile-dropdown-btn" onclick="toggleProfileDropdown(event)"
-<<<<<<< HEAD
                                 class="flex items-center gap-2 px-2 py-1.5 rounded-lg hover:bg-gray-800/60 transition-colors cursor-pointer select-none">
                                 <div class="w-9 h-9 rounded-full overflow-hidden border border-gray-200 dark:border-gray-600 flex items-center justify-center bg-emerald-500 text-white font-semibold text-sm flex-shrink-0">
-                                    @if(auth()->user()->avatar)
-                                        <img src="{{ asset('storage/' . auth()->user()->avatar) }}" class="w-full h-full object-cover object-center" alt="User Avatar" onerror="this.style.display='none'; this.nextElementSibling.style.display='flex';">
-                                        <span style="display:none" class="w-full h-full flex items-center justify-center">{{ strtoupper(substr(auth()->user()->name, 0, 1)) }}</span>
-=======
-                                class="flex items-center gap-2 px-2 py-1 rounded-lg bg-gray-50 dark:bg-gray-800 border border-gray-150 dark:border-gray-700 hover:bg-gray-100 dark:hover:bg-gray-750 transition-colors cursor-pointer select-none">
-                                <div class="w-6 h-6 rounded-full overflow-hidden border border-gray-200 dark:border-gray-600 flex items-center justify-center bg-green-600 text-white font-bold text-xs flex-shrink-0">
-                                    @if(auth()->user()->avatar)
-                                        <img src="{{ asset('storage/' . auth()->user()->avatar) }}" class="w-full h-full object-cover" alt="User Avatar">
->>>>>>> ad0ccee2af44b30e9d0ff7fdf2eb6cb6db219755
+                                            @if(auth()->user()->avatar)
+                                                <img src="{{ auth()->user()->avatarUrl() }}" class="w-full h-full object-cover object-center" alt="User Avatar">
                                     @else
                                         {{ strtoupper(substr(auth()->user()->name, 0, 1)) }}
                                     @endif
                                 </div>
-<<<<<<< HEAD
                                 <span class="hidden sm:inline text-sm font-semibold text-gray-700 dark:text-gray-300 max-w-[110px] truncate">{{ auth()->user()->name }}</span>
                                 <svg class="w-3.5 h-3.5 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-=======
-                                <span class="hidden sm:inline text-xs font-semibold text-gray-700 dark:text-gray-300 max-w-[100px] truncate">{{ auth()->user()->name }}</span>
-                                <svg class="w-3 h-3 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
->>>>>>> ad0ccee2af44b30e9d0ff7fdf2eb6cb6db219755
                                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"/>
                                 </svg>
                             </button>
 
-<<<<<<< HEAD
-                            <div id="profile-dropdown-menu" class="hidden absolute right-0 mt-2 min-w-[220px] max-w-xs rounded-xl border border-gray-100 dark:border-gray-800 bg-white dark:bg-gray-900 py-2 z-50 transform transition-all opacity-0 translate-y-1 pointer-events-none scale-95 duration-150 shadow-lg">
-                                <div class="px-4 py-3 border-b border-gray-100 dark:border-gray-800 flex items-center gap-3">
-                                    <div class="w-10 h-10 rounded-full overflow-hidden flex items-center justify-center bg-emerald-500 text-white font-semibold text-sm flex-shrink-0 border border-gray-200 dark:border-gray-700">
+                            <div id="profile-dropdown-menu" class="hidden absolute right-0 mt-2 min-w-[220px] max-w-xs rounded-lg border border-gray-100 dark:border-gray-800 bg-white dark:bg-gray-900 py-1 z-50 transform transition-all opacity-0 translate-y-1 pointer-events-none scale-95 duration-150">
+                                <div class="px-3 py-2 border-b border-gray-100 dark:border-gray-800 flex items-center gap-2">
+                                    <div class="w-9 h-9 rounded-full overflow-hidden flex items-center justify-center bg-emerald-500 text-white font-semibold text-xs flex-shrink-0 border border-gray-200 dark:border-gray-700">
                                         @if(auth()->user()->avatar)
                                             <img src="{{ auth()->user()->avatarUrl() }}" class="w-full h-full object-cover object-center" alt="User Avatar">
-=======
-                            {{-- Animated Dropdown Menu --}}
-                            <div id="profile-dropdown-menu" class="hidden absolute right-0 mt-2 w-60 rounded-xl border border-gray-100 dark:border-gray-800 bg-white dark:bg-gray-900 shadow-xl py-1.5 z-50 transform transition-all opacity-0 translate-y-1 pointer-events-none scale-95 duration-150">
-                                {{-- User Card info --}}
-                                <div class="px-4 py-2.5 border-b border-gray-100 dark:border-gray-800 flex items-center gap-3">
-                                    <div class="w-8 h-8 rounded-full overflow-hidden flex items-center justify-center bg-green-600 text-white font-bold text-xs flex-shrink-0">
-                                        @if(auth()->user()->avatar)
-                                            <img src="{{ asset('storage/' . auth()->user()->avatar) }}" class="w-full h-full object-cover" alt="User Avatar">
->>>>>>> ad0ccee2af44b30e9d0ff7fdf2eb6cb6db219755
                                         @else
                                             {{ strtoupper(substr(auth()->user()->name, 0, 1)) }}
                                         @endif
                                     </div>
                                     <div class="flex flex-col min-w-0 leading-tight">
                                         <span class="text-sm font-semibold text-gray-900 dark:text-white truncate">{{ auth()->user()->name }}</span>
-<<<<<<< HEAD
                                         <span class="text-xs text-gray-500 dark:text-gray-400 truncate mt-0.5 max-w-[170px]">{{ auth()->user()->email }}</span>
                                     </div>
                                 </div>
@@ -260,85 +181,31 @@
                                     <a href="{{ route('profile.edit') }}" class="block px-4 py-2 text-sm font-medium text-gray-700 dark:text-gray-300 rounded-md hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors">{{ __('messages.tab_profile') }}</a>
                                     <a href="{{ route('profile.edit', ['tab' => 'security']) }}" class="block px-4 py-2 text-sm font-medium text-gray-700 dark:text-gray-300 rounded-md hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors">{{ __('messages.tab_security') }}</a>
                                     <a href="{{ route('profile.edit', ['tab' => 'settings']) }}" class="block px-4 py-2 text-sm font-medium text-gray-700 dark:text-gray-300 rounded-md hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors">{{ __('messages.dropdown_settings') }}</a>
-=======
-                                        <span class="text-[11px] text-gray-500 dark:text-gray-400 truncate mt-0.5">{{ auth()->user()->email }}</span>
-                                    </div>
-                                </div>
-
-                                {{-- Links --}}
-                                <div class="py-1 px-1.5">
-                                    <a href="{{ route('profile.edit') }}" class="flex items-center gap-2.5 px-2.5 py-1.5 text-[13px] font-medium text-gray-700 dark:text-gray-300 rounded-md hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors">
-                                        <span class="opacity-60 text-sm">👤</span> {{ __('messages.tab_profile') }}
-                                    </a>
-                                    <a href="{{ route('profile.edit', ['tab' => 'security']) }}" class="flex items-center gap-2.5 px-2.5 py-1.5 text-[13px] font-medium text-gray-700 dark:text-gray-300 rounded-md hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors">
-                                        <span class="opacity-60 text-sm">🔒</span> {{ __('messages.tab_security') }}
-                                    </a>
-                                    <a href="{{ route('profile.edit', ['tab' => 'settings']) }}" class="flex items-center gap-2.5 px-2.5 py-1.5 text-[13px] font-medium text-gray-700 dark:text-gray-300 rounded-md hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors">
-                                        <span class="opacity-60 text-sm">⚙️</span> {{ __('messages.dropdown_settings') }}
-                                    </a>
->>>>>>> ad0ccee2af44b30e9d0ff7fdf2eb6cb6db219755
                                 </div>
 
                                 <div class="border-t border-gray-100 dark:border-gray-800"></div>
 
-<<<<<<< HEAD
-                                <div class="px-4 py-2 text-sm text-gray-700 dark:text-gray-300 flex items-center justify-between">
-                                    <span class="flex items-center gap-2.5">
-                                        <span class="opacity-60 text-sm">🌗</span> {{ __('messages.dropdown_theme') }}
-                                    </span>
-                                    <button onclick="toggleDarkMode(event)" class="w-6 h-6 rounded-lg border border-gray-200 dark:border-gray-700 hover:bg-gray-100 dark:hover:bg-gray-800 flex items-center justify-center transition-colors cursor-pointer">
-=======
-                                {{-- Theme Toggle Inside Dropdown --}}
-                                <div class="px-4 py-2 flex items-center justify-between">
-                                    <span class="text-[13px] font-medium text-gray-700 dark:text-gray-300 flex items-center gap-2.5">
-                                        <span class="opacity-60 text-sm">🌗</span> {{ __('messages.dropdown_theme') }}
-                                    </span>
-                                    <button onclick="toggleDarkMode(event)" class="w-6 h-6 rounded border border-gray-200 dark:border-gray-700 hover:bg-gray-100 dark:hover:bg-gray-800 flex items-center justify-center transition-colors cursor-pointer">
->>>>>>> ad0ccee2af44b30e9d0ff7fdf2eb6cb6db219755
-                                        <span class="theme-toggle-icon text-[11px]">🌙</span>
+                                <div class="px-3 py-1.5 text-xs text-gray-700 dark:text-gray-300 flex items-center justify-between">
+                                    <span class="flex items-center gap-2">🌗 {{ __('messages.dropdown_theme') }}</span>
+                                    <button onclick="toggleDarkMode(event)" class="w-5 h-5 rounded border border-gray-200 dark:border-gray-700 hover:bg-gray-100 dark:hover:bg-gray-800 flex items-center justify-center transition-colors cursor-pointer text-[9px]">
+                                        <span class="theme-toggle-icon">🌙</span>
                                     </button>
                                 </div>
 
-<<<<<<< HEAD
-                                <div class="px-4 py-2 text-sm text-gray-700 dark:text-gray-300 flex items-center justify-between">
-                                    <span class="flex items-center gap-2.5">
-=======
-                                {{-- Language Switcher Inside Dropdown --}}
-                                <div class="px-4 py-2 flex items-center justify-between">
-                                    <span class="text-[13px] font-medium text-gray-700 dark:text-gray-300 flex items-center gap-2.5">
->>>>>>> ad0ccee2af44b30e9d0ff7fdf2eb6cb6db219755
-                                        <span class="opacity-60 text-sm">🌐</span> {{ __('messages.dropdown_lang') }}
-                                    </span>
-                                    <div class="flex items-center bg-gray-100 dark:bg-gray-800/80 rounded-md p-1 border border-gray-200 dark:border-gray-700/50">
-                                        <a href="{{ route('locale.set', 'en') }}"
-<<<<<<< HEAD
-                                           class="w-8 text-center py-1 rounded text-[10px] font-semibold transition-all {{ app()->getLocale() === 'en' ? 'bg-white dark:bg-gray-700 text-gray-900 dark:text-white' : 'text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-200' }}">EN</a>
-                                        <a href="{{ route('locale.set', 'hi') }}"
-                                           class="w-8 text-center py-1 rounded text-[10px] font-semibold transition-all {{ app()->getLocale() === 'hi' ? 'bg-white dark:bg-gray-700 text-gray-900 dark:text-white' : 'text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-200' }}">HI</a>
-=======
-                                           class="w-8 text-center py-1 rounded text-[10px] font-semibold transition-all {{ app()->getLocale() === 'en' ? 'bg-white dark:bg-gray-700 text-gray-900 dark:text-white shadow-sm ring-1 ring-black/5 dark:ring-white/5' : 'text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-200' }}">EN</a>
-                                        <a href="{{ route('locale.set', 'hi') }}"
-                                           class="w-8 text-center py-1 rounded text-[10px] font-semibold transition-all {{ app()->getLocale() === 'hi' ? 'bg-white dark:bg-gray-700 text-gray-900 dark:text-white shadow-sm ring-1 ring-black/5 dark:ring-white/5' : 'text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-200' }}">HI</a>
->>>>>>> ad0ccee2af44b30e9d0ff7fdf2eb6cb6db219755
+                                <div class="px-3 py-1.5 text-xs text-gray-700 dark:text-gray-300 flex items-center justify-between">
+                                    <span class="flex items-center gap-2">🌐 {{ __('messages.dropdown_lang') }}</span>
+                                    <div class="flex items-center bg-gray-100 dark:bg-gray-800/80 rounded p-0.5 border border-gray-200 dark:border-gray-700">
+                                        <a href="{{ route('locale.set', 'en') }}" class="w-6 text-center py-0.5 rounded text-[9px] font-semibold transition-all {{ app()->getLocale() === 'en' ? 'bg-white dark:bg-gray-700 text-gray-900 dark:text-white' : 'text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-200' }}">EN</a>
+                                        <a href="{{ route('locale.set', 'hi') }}" class="w-6 text-center py-0.5 rounded text-[9px] font-semibold transition-all {{ app()->getLocale() === 'hi' ? 'bg-white dark:bg-gray-700 text-gray-900 dark:text-white' : 'text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-200' }}">HI</a>
                                     </div>
                                 </div>
 
-                                <div class="border-t border-gray-100 dark:border-gray-800 my-1"></div>
+                                <div class="border-t border-gray-100 dark:border-gray-800"></div>
 
-<<<<<<< HEAD
-                                <div class="px-1 pb-1">
+                                <div class="px-0.5 py-0.5">
                                     <form action="{{ route('logout') }}" method="POST" class="block w-full">
                                         @csrf
-                                        <button type="submit" class="w-full text-left px-4 py-2 text-[13px] font-medium text-red-600 dark:text-red-400 rounded-lg hover:bg-red-50 dark:hover:bg-red-900/20 transition-colors">{{ __('messages.nav_logout') }}</button>
-=======
-                                {{-- Logout --}}
-                                <div class="px-1.5 pb-1.5">
-                                    <form action="{{ route('logout') }}" method="POST" class="block w-full">
-                                        @csrf
-                                        <button type="submit" class="flex w-full items-center gap-2.5 px-2.5 py-1.5 text-[13px] font-medium text-red-600 dark:text-red-400 rounded-md hover:bg-red-50 dark:hover:bg-red-900/20 transition-colors cursor-pointer">
-                                            <span class="opacity-60 text-sm">🚪</span> {{ __('messages.nav_logout') }}
-                                        </button>
->>>>>>> ad0ccee2af44b30e9d0ff7fdf2eb6cb6db219755
+                                        <button type="submit" class="w-full text-left px-3 py-1.5 text-xs font-medium text-red-600 dark:text-red-400 rounded hover:bg-red-50 dark:hover:bg-red-900/20 transition-colors">{{ __('messages.nav_logout') }}</button>
                                     </form>
                                 </div>
                             </div>
@@ -380,7 +247,7 @@
         </div>
     </nav>
 
-    {{-- ─── Flash Messages ─────────────────────────────────────────────────── --}}
+    {{-- ─── Flash Messages --}}
     @if(session('success'))
         <script>document.addEventListener('DOMContentLoaded', () => showToast('{{ addslashes(session('success')) }}', 'success'));</script>
     @endif
@@ -388,15 +255,14 @@
         <script>document.addEventListener('DOMContentLoaded', () => showToast('{{ addslashes(session('error')) }}', 'error'));</script>
     @endif
 
-    {{-- ─── Main Content ────────────────────────────────────────────────────── --}}
+    {{-- ─── Main Content --}}
     <main id="main-content">
         @yield('content')
     </main>
 
-    {{-- ─── Footer ──────────────────────────────────────────────────────────── --}}
-<<<<<<< HEAD
+    {{-- ─── Footer --}}
     <footer class="bg-gray-900 dark:bg-gray-950 mt-8 border-t border-gray-800 dark:border-gray-700/50">
-        <div class="max-w-7xl mx-auto px-4 sm:px-6 py-6">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 py-8">
             {{-- Main Footer Grid --}}
             <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-6 mb-6">
                 
@@ -480,55 +346,6 @@
                         <span class="text-gray-600">·</span>
                         <span class="text-gray-600">v1.0.0</span>
                     </div>
-=======
-    <footer class="bg-gray-900 dark:bg-gray-950 mt-16 border-t border-gray-800">
-        <div class="max-w-7xl mx-auto px-6 py-10">
-            <div class="grid grid-cols-1 md:grid-cols-3 gap-8 mb-8">
-                <div>
-                    <div class="flex items-center gap-2 mb-3">
-                        <div class="text-green-500">
-                            <svg class="w-7 h-7" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-                                <path d="M10 20c5.5-2.5 8-6.4 8-12a4 4 0 0 0-8 0c0 5.6 2.5 9.5 8 12Z" fill="currentColor" fill-opacity="0.2"/>
-                                <path d="M7 20h10" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
-                                <path d="M10 20c5.5-2.5 8-6.4 8-12a4 4 0 0 0-8 0c0 5.6 2.5 9.5 8 12Z" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
-                                <path d="M10 12.1C8.4 10.7 7 8 7 8s2-1.1 3.5.3c1.5 1.3 2 4.1 2 4.1s-1 .5-2.5-.3Z" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
-                            </svg>
-                        </div>
-                        <span class="font-semibold text-white text-sm">{{ __('messages.app_name') }}</span>
-                    </div>
-                    <p class="text-gray-400 text-sm leading-relaxed">{{ __('messages.footer_desc') }}</p>
-                </div>
-
-                <div>
-                    <h4 class="text-gray-300 font-medium text-xs uppercase tracking-wider mb-3">{{ __('messages.quick_links') }}</h4>
-                    <ul class="space-y-2 text-sm">
-                        <li><a href="{{ route('home') }}" class="text-gray-500 hover:text-gray-300 transition-colors">{{ __('messages.nav_home') }}</a></li>
-                        <li><a href="{{ route('predictions.create') }}" class="text-gray-500 hover:text-gray-300 transition-colors">{{ __('messages.nav_predict') }}</a></li>
-                        <li><a href="{{ route('weather') }}" class="text-gray-500 hover:text-gray-300 transition-colors">{{ __('messages.nav_weather') }}</a></li>
-                        <li><a href="{{ route('predictions.index') }}" class="text-gray-500 hover:text-gray-300 transition-colors">{{ __('messages.nav_history') }}</a></li>
-                    </ul>
-                </div>
-
-                <div>
-                    <h4 class="text-gray-300 font-medium text-xs uppercase tracking-wider mb-3">{{ __('messages.footer_technologies') }}</h4>
-                    <p class="text-gray-500 text-xs leading-relaxed mb-3">
-                        Powered by modern agricultural intelligence using Laravel 12, Tailwind CSS v4, and Open-Meteo APIs.
-                    </p>
-                    <div class="flex flex-wrap gap-2">
-                        <span class="px-2 py-0.5 text-[10px] font-medium bg-gray-800 text-gray-400 rounded-md border border-gray-700/50">Laravel 12</span>
-                        <span class="px-2 py-0.5 text-[10px] font-medium bg-gray-800 text-gray-400 rounded-md border border-gray-700/50">Tailwind v4</span>
-                        <span class="px-2 py-0.5 text-[10px] font-medium bg-gray-800 text-gray-400 rounded-md border border-gray-700/50">Open-Meteo</span>
-                    </div>
-                </div>
-            </div>
-
-            <div class="border-t border-gray-800 pt-6 flex flex-col sm:flex-row items-center justify-between gap-3">
-                <p class="text-gray-600 text-xs">© {{ date('Y') }} {{ __('messages.app_name') }}. {{ __('messages.built_with') }}.</p>
-                <div class="flex items-center gap-4 text-xs text-gray-600">
-                    <span class="hover:text-gray-400 transition-colors cursor-default">English / हिन्दी</span>
-                    <span>·</span>
-                    <a href="mailto:support@cropyield.com" class="hover:text-gray-400 transition-colors">support@cropyield.com</a>
->>>>>>> ad0ccee2af44b30e9d0ff7fdf2eb6cb6db219755
                 </div>
             </div>
         </div>

@@ -47,36 +47,20 @@
                 
                 <form action="{{ route('profile.update') }}" method="POST" enctype="multipart/form-data" class="space-y-5">
                     @csrf
-                    
-<<<<<<< HEAD
-                   {{-- Avatar Upload Section --}}
-                    <div class="flex items-center gap-5">
-                        <div class="relative w-20 h-20 rounded-full overflow-hidden border-2 border-gray-200 dark:border-gray-700 shrink-0">
-                            @if($user->avatar)
-<img src="{{ asset('storage/app/public/avatars' . $user->avatar) }}" id="avatar-preview" class="w-full h-full object-cover" alt="Avatar">
-                                <div id="avatar-initial" class="hidden"></div>
-=======
+
                     {{-- Avatar Upload Section --}}
                     <div class="flex items-center gap-5">
                         <div class="relative w-20 h-20 rounded-full overflow-hidden border-2 border-gray-200 dark:border-gray-700 bg-gray-100 dark:bg-gray-800 shrink-0 flex items-center justify-center">
                             @if($user->avatar)
-                                <img src="{{ asset('storage/' . $user->avatar) }}" id="avatar-preview" class="w-full h-full object-cover" alt="Avatar">
->>>>>>> ad0ccee2af44b30e9d0ff7fdf2eb6cb6db219755
+                                <img src="{{ $user->avatarUrl() }}" id="avatar-preview" class="w-full h-full object-cover" alt="Avatar">
                             @else
                                 <div id="avatar-initial" class="w-full h-full bg-green-600 flex items-center justify-center text-white text-3xl font-semibold">
                                     {{ strtoupper(substr($user->name, 0, 1)) }}
                                 </div>
-<<<<<<< HEAD
-                                <img src="" id="avatar-preview" class="hidden absolute inset-0 w-full h-full object-cover" alt="Avatar">
-                            @endif
-                        </div>
-
-=======
                                 <img src="" id="avatar-preview" class="hidden w-full h-full object-cover" alt="Avatar">
                             @endif
                         </div>
-                        
->>>>>>> ad0ccee2af44b30e9d0ff7fdf2eb6cb6db219755
+
                         <div class="space-y-1 grow">
                             <label class="block text-xs font-bold text-gray-700 dark:text-gray-300 uppercase tracking-wider">{{ __('messages.profile_avatar_label') }}</label>
                             <input type="file" name="avatar" accept="image/*" onchange="previewAvatar(this)"

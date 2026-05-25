@@ -45,10 +45,8 @@ class ProfileController extends Controller
 
         $user->update($validated);
 
-<<<<<<< HEAD
         auth()->setUser($user->fresh());
-=======
->>>>>>> ad0ccee2af44b30e9d0ff7fdf2eb6cb6db219755
+
         return redirect()->route('profile.edit')->with('success', __('messages.update_profile_success'));
     }
 

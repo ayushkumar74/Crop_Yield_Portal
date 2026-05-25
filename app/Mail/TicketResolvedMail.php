@@ -29,7 +29,7 @@ class TicketResolvedMail extends Mailable
     public function envelope(): Envelope
     {
         return new Envelope(
-            subject: 'Your Support Ticket Has Been Resolved - ' . $this->ticket->ticket_number,
+            subject: 'Your Support Ticket Has Been Resolved - '.$this->ticket->ticket_number,
         );
     }
 
@@ -48,8 +48,6 @@ class TicketResolvedMail extends Mailable
 
     /**
      * Get the attachments for the message.
-     *
-     * @return array
      */
     public function attachments(): array
     {

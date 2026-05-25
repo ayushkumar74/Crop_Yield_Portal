@@ -3,10 +3,7 @@
 use App\Models\User;
 use App\Services\WeatherService;
 use Illuminate\Foundation\Testing\RefreshDatabase;
-<<<<<<< HEAD
 use Illuminate\Support\Facades\Http;
-=======
->>>>>>> ad0ccee2af44b30e9d0ff7fdf2eb6cb6db219755
 
 uses(RefreshDatabase::class);
 
@@ -45,32 +42,21 @@ test('authenticated users can update and save their exact location coordinates a
 test('weather service falls back to bigdatacloud when openstreetmap fails', function () {
     $weatherService = app(WeatherService::class);
 
-<<<<<<< HEAD
     Http::preventStrayRequests();
-=======
-    // Mock HTTP requests to force Nominatim fail, and BigDataCloud to succeed
->>>>>>> ad0ccee2af44b30e9d0ff7fdf2eb6cb6db219755
     Http::fake([
         'https://nominatim.openstreetmap.org/*' => Http::response([], 500),
         'https://api.bigdatacloud.net/*' => Http::response([
             'locality' => 'Ludhiana',
             'principalSubdivision' => 'Punjab',
         ], 200),
-<<<<<<< HEAD
         'https://archive-api.open-meteo.com/*' => Http::response([
             'daily' => ['precipitation_sum' => [540]],
         ]),
-=======
->>>>>>> ad0ccee2af44b30e9d0ff7fdf2eb6cb6db219755
         'https://api.open-meteo.com/*' => Http::response([
             'current' => [
                 'temperature_2m' => 30.8,
                 'relative_humidity_2m' => 43,
-<<<<<<< HEAD
                 'precipitation' => 0,
-=======
-                'rain' => 0,
->>>>>>> ad0ccee2af44b30e9d0ff7fdf2eb6cb6db219755
                 'weather_code' => 0,
                 'wind_speed_10m' => 7.2,
             ],

@@ -1,15 +1,9 @@
 <?php
 
 use App\Models\User;
-<<<<<<< HEAD
 use App\Services\WeatherService;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Facades\Http;
-=======
-use App\Models\WeatherLog;
-use App\Services\WeatherService;
-use Illuminate\Foundation\Testing\RefreshDatabase;
->>>>>>> ad0ccee2af44b30e9d0ff7fdf2eb6cb6db219755
 
 uses(RefreshDatabase::class);
 
@@ -24,10 +18,9 @@ test('login redirects user to dashboard instead of predictions', function () {
         'password' => 'password',
     ]);
 
-    $response->assertRedirect(route('home'));
+    $response->assertRedirect(route('otp.show'));
 });
 
-<<<<<<< HEAD
 test('weather service maps actual current provider readings and removes uv data', function () {
     Http::preventStrayRequests();
     Http::fake([
@@ -148,50 +141,4 @@ test('weather service replaces a small settlement name with its major town', fun
 
     expect($weather['city'])->toBe('Phagwara, Punjab')
         ->and($weather['city'])->not->toContain('Athouli');
-=======
-test('weather service returns accurate rain and annual_rain', function () {
-    $service = new WeatherService;
-
-    // Query Punjab coordinates
-    $weather = $service->getWeather(30.34, 76.38);
-
-    expect($weather['success'])->toBeTrue();
-    expect($weather)->toHaveKey('rain');
-    expect($weather)->toHaveKey('annual_rain');
-
-    // Actual current hourly precipitation should be minimal (typically 0 on normal days)
-    expect($weather['rain'])->toBeLessThan(100.0);
-
-    // Annual rain should be estimated in the Punjab agriculture band (580 - 720 mm)
-    expect($weather['annual_rain'])->toBeGreaterThanOrEqual(300);
-    expect($weather['annual_rain'])->toBeLessThanOrEqual(3500);
-});
-
-test('weather service database fallback operates correctly', function () {
-    // Seed a recent local weather log near target coordinates
-    WeatherLog::create([
-        'city' => 'Ambala, Haryana',
-        'temperature' => 24.5,
-        'humidity' => 55,
-        'rainfall' => 2.0,
-        'wind_speed' => 10.0,
-        'weather_condition' => 'Clear Sky',
-        'latitude' => 30.38,
-        'longitude' => 76.77,
-        'created_at' => now(),
-    ]);
-
-    $service = new WeatherService;
-
-    // Run search for nearby coordinates (within 0.5 degrees / ~50km)
-    // Note: We bypass Cache here since round(30.40,3) is different from round(30.38,3)
-    $weather = $service->getWeather(30.40, 76.80);
-
-    expect($weather['success'])->toBeTrue();
-    // Since API lookup for 30.40, 76.80 will resolve and cacheHaryana, let's verify database query specifically by checking the fallback logic
-    if (isset($weather['cached']) && $weather['cached'] === true) {
-        expect($weather['city'])->toContain('Ambala');
-        expect($weather['temperature'])->toEqual(24.5);
-    }
->>>>>>> ad0ccee2af44b30e9d0ff7fdf2eb6cb6db219755
 });

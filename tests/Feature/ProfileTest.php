@@ -2,13 +2,9 @@
 
 use App\Models\User;
 use Illuminate\Foundation\Testing\RefreshDatabase;
-<<<<<<< HEAD
 use Illuminate\Http\UploadedFile;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Storage;
-=======
-use Illuminate\Support\Facades\Hash;
->>>>>>> ad0ccee2af44b30e9d0ff7fdf2eb6cb6db219755
 
 uses(RefreshDatabase::class);
 
@@ -38,7 +34,6 @@ test('authenticated user can update profile details', function () {
     ]);
 });
 
-<<<<<<< HEAD
 test('authenticated user uploaded avatar is stored and rendered after a later request', function () {
     Storage::fake('public');
     $user = User::factory()->create();
@@ -76,8 +71,6 @@ test('external avatar urls are rendered without a storage prefix', function () {
         ->assertDontSee('/storage/https://example.com/profile/avatar.jpg', false);
 });
 
-=======
->>>>>>> ad0ccee2af44b30e9d0ff7fdf2eb6cb6db219755
 test('authenticated user can change password', function () {
     $user = User::factory()->create([
         'password' => Hash::make('old-password'),

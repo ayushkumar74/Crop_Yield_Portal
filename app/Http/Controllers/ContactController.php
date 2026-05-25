@@ -48,10 +48,10 @@ class ContactController extends Controller
                     ->from(env('SUPPORT_MAIL_FROM_ADDRESS', 'support.cropyield@gmail.com'), env('SUPPORT_MAIL_FROM_NAME', env('APP_NAME')))
                 );
         } catch (\Exception $e) {
-            Log::error('Failed to send ticket confirmation email: ' . $e->getMessage());
+            Log::error('Failed to send ticket confirmation email: '.$e->getMessage());
         }
 
-        return back()->with('success', 'Thank you! Your support ticket has been created. We\'ll get back to you soon. Ticket #: ' . $ticket->ticket_number);
+        return back()->with('success', 'Thank you! Your support ticket has been created. We\'ll get back to you soon. Ticket #: '.$ticket->ticket_number);
     }
 
     /**
@@ -60,7 +60,7 @@ class ContactController extends Controller
     private function generateTicketNumber(): string
     {
         do {
-            $ticket_number = 'TKT-' . date('Y') . '-' . Str::upper(Str::random(8));
+            $ticket_number = 'TKT-'.date('Y').'-'.Str::upper(Str::random(8));
         } while (SupportTicket::where('ticket_number', $ticket_number)->exists());
 
         return $ticket_number;

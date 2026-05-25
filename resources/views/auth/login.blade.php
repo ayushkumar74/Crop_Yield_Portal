@@ -11,32 +11,6 @@
 </div>
 @endif
 
-<<<<<<< HEAD
-{{-- ✅ NEW: Google Login Button --}}
-<a href="{{ route('auth.google') }}"
-   class="flex items-center justify-center gap-3 w-full border border-gray-300 dark:border-gray-600
-          rounded-lg py-2.5 px-4 text-sm font-medium text-gray-700 dark:text-gray-200
-          bg-white dark:bg-gray-800 hover:bg-gray-50 dark:hover:bg-gray-700
-          transition-colors duration-150 mb-4 shadow-sm">
-    <svg class="w-5 h-5 shrink-0" viewBox="0 0 48 48" xmlns="http://www.w3.org/2000/svg">
-        <path fill="#EA4335" d="M24 9.5c3.17 0 6.01 1.09 8.25 2.88l6.16-6.16C34.54 3.04 29.55 1 24 1 14.82 1 7.03 6.48 3.58 14.24l7.17 5.57C12.45 13.41 17.77 9.5 24 9.5z"/>
-        <path fill="#4285F4" d="M46.1 24.55c0-1.57-.14-3.09-.4-4.55H24v8.61h12.42c-.54 2.9-2.17 5.36-4.63 7.02l7.19 5.59C43.22 37.34 46.1 31.35 46.1 24.55z"/>
-        <path fill="#FBBC05" d="M10.75 28.43A14.57 14.57 0 0 1 9.5 24c0-1.54.26-3.03.72-4.43l-7.17-5.57A22.9 22.9 0 0 0 1 24c0 3.68.87 7.15 2.41 10.24l7.34-5.81z"/>
-        <path fill="#34A853" d="M24 47c5.45 0 10.03-1.81 13.37-4.89l-7.19-5.59c-1.79 1.2-4.09 1.92-6.18 1.92-6.2 0-11.5-3.88-13.4-9.35l-7.34 5.81C7.1 42.56 14.87 47 24 47z"/>
-    </svg>
-    Continue with Google
-</a>
-
-{{-- ✅ NEW: Divider --}}
-<div class="flex items-center gap-3 mb-4">
-    <hr class="flex-1 border-gray-200 dark:border-gray-700">
-    <span class="text-xs text-gray-400 dark:text-gray-500">or sign in with email</span>
-    <hr class="flex-1 border-gray-200 dark:border-gray-700">
-</div>
-
-{{-- YOUR ORIGINAL FORM — NO CHANGES --}}
-=======
->>>>>>> ad0ccee2af44b30e9d0ff7fdf2eb6cb6db219755
 <form method="POST" action="{{ route('login') }}" class="space-y-4">
     @csrf
     <div>
@@ -55,19 +29,32 @@
             {{ __('messages.remember_me') }}
         </label>
     </div>
-<<<<<<< HEAD
-
-    {{-- ✅ NEW: OTP note --}}
-    <p class="text-xs text-gray-400 dark:text-gray-500 bg-gray-50 dark:bg-gray-800/60 rounded-md px-3 py-2">
-        🔐 A 6-digit OTP will be sent to your email after submitting.
-    </p>
-
-=======
->>>>>>> ad0ccee2af44b30e9d0ff7fdf2eb6cb6db219755
     <button type="submit" class="btn-primary w-full py-2.5">
         {{ __('messages.login_btn') }}
     </button>
 </form>
+
+<!-- Google OAuth Divider -->
+<div class="relative my-5">
+    <div class="absolute inset-0 flex items-center">
+        <div class="w-full border-t border-gray-200 dark:border-gray-700"></div>
+    </div>
+    <div class="relative flex justify-center text-xs uppercase">
+        <span class="px-2 bg-white dark:bg-gray-900 text-gray-500 dark:text-gray-400 font-medium">Or</span>
+    </div>
+</div>
+
+<!-- Google OAuth Button -->
+<a href="{{ route('auth.google') }}" class="w-full flex items-center justify-center gap-2 py-2 px-4 bg-white dark:bg-gray-800 border border-gray-300 dark:border-gray-600 rounded font-medium text-sm text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors">
+    <svg class="w-4 h-4" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+        <path d="M23.745 12.27c0-.79-.1-1.54-.257-2.26H12v4.26h6.235c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.08z" fill="#4285F4"/>
+        <path d="M12 24c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 24 12 24z" fill="#34A853"/>
+        <path d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l2.85-2.22.81-.62z" fill="#FBBC05"/>
+        <path d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 4.47 2.18 9.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z" fill="#EA4335"/>
+    </svg>
+    Sign in with Google
+</a>
+
 @endsection
 
 @section('auth-footer')
@@ -75,8 +62,4 @@
     {{ __('messages.login_footer') }}
     <a href="{{ route('register') }}" class="text-green-600 dark:text-green-400 font-medium hover:underline">{{ __('messages.create_account') }}</a>
 </p>
-<<<<<<< HEAD
 @endsection
-=======
-@endsection
->>>>>>> ad0ccee2af44b30e9d0ff7fdf2eb6cb6db219755
