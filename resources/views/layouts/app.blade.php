@@ -26,9 +26,7 @@
     <script>
         // Configure Google Maps API key from environment or meta tag
         window.GOOGLE_MAPS_API_KEY = '{{ env("GOOGLE_MAPS_API_KEY", "") }}' || document.querySelector('meta[name="google-maps-api-key"]')?.content || '';
-        if (window.GOOGLE_MAPS_API_KEY) {
-            console.log('[CONFIG] Google Maps API key configured');
-        } else {
+        if (!window.GOOGLE_MAPS_API_KEY) {
             console.warn('[CONFIG] Google Maps API key not configured - location will fall back to IP-based detection');
         }
     </script>
@@ -72,7 +70,7 @@
 
     {{-- ─── Navbar --}}
     <nav class="glass-nav sticky top-0 z-50">
-        <div class="max-w-7xl mx-auto px-4 sm:px-6 h-12 flex items-center justify-between gap-2">
+        <div class="max-w-6xl mx-auto px-4 sm:px-6 h-14 flex items-center justify-between gap-2">
 
             {{-- Logo --}}
             <x-app-logo href="{{ route('home') }}" size="md" />
@@ -149,7 +147,7 @@
                         <div class="relative inline-block text-left">
                             <button id="profile-dropdown-btn" onclick="toggleProfileDropdown(event)"
                                 class="flex items-center gap-2 px-2 py-1.5 rounded-lg hover:bg-gray-800/60 transition-colors cursor-pointer select-none">
-                                <div class="w-9 h-9 rounded-full overflow-hidden border border-gray-200 dark:border-gray-600 flex items-center justify-center bg-emerald-500 text-white font-semibold text-sm flex-shrink-0">
+                                <div class="w-8 h-8 rounded-full overflow-hidden border border-gray-200 dark:border-gray-600 flex items-center justify-center bg-emerald-500 text-white font-semibold text-sm flex-shrink-0">
                                             @if(auth()->user()->avatar)
                                                 <img src="{{ auth()->user()->avatarUrl() }}" class="w-full h-full object-cover object-center" alt="User Avatar">
                                     @else
@@ -261,8 +259,8 @@
     </main>
 
     {{-- ─── Footer --}}
-    <footer class="bg-gray-900 dark:bg-gray-950 mt-8 border-t border-gray-800 dark:border-gray-700/50">
-        <div class="max-w-7xl mx-auto px-4 sm:px-6 py-8">
+    <footer class="bg-gray-900 dark:bg-gray-950 mt-6 border-t border-gray-800 dark:border-gray-700/50">
+                <div class="max-w-6xl mx-auto px-4 sm:px-6 py-6">
             {{-- Main Footer Grid --}}
             <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-6 mb-6">
                 

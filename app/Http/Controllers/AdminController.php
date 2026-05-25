@@ -9,6 +9,7 @@ use App\Models\SupportTicket;
 use App\Models\User;
 use App\Models\WeatherLog;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\Mail;
 
 class AdminController extends Controller
@@ -171,6 +172,13 @@ class AdminController extends Controller
             'resolved' => SupportTicket::where('status', 'resolved')->count(),
         ];
 
+        // Clear admin new-ticket counter when admin opens the tickets page
+        try {
+            Cache::forget('admin_new_tickets');
+        } catch (\Exception $e) {
+            \Log::warning('Failed to clear admin_new_tickets cache: '.$e->getMessage());
+        }
+
         return view('admin.tickets.index', compact('tickets', 'stats'));
     }
 
@@ -194,15 +202,52 @@ class AdminController extends Controller
         $ticket->update(['status' => 'resolved', 'admin_response' => $validated['admin_response'], 'resolved_at' => now(), 'assigned_to' => auth()->id()]);
 
         try {
+            $mailable = (new TicketResolvedMail($ticket))
+                ->from(env('SUPPORT_MAIL_FROM_ADDRESS', 'support.cropyield@gmail.com'), env('SUPPORT_MAIL_FROM_NAME', env('APP_NAME')))
+                ->cc([])
+                ->bcc([]);
+
             Mail::mailer('support')
                 ->to($ticket->user->email)
-                ->send((new TicketResolvedMail($ticket))
-                    ->from(env('SUPPORT_MAIL_FROM_ADDRESS', 'support.cropyield@gmail.com'), env('SUPPORT_MAIL_FROM_NAME', env('APP_NAME')))
-                );
+                ->send($mailable);
         } catch (\Exception $e) {
             \Log::error('Failed to send ticket resolution email: '.$e->getMessage());
         }
 
         return back()->with('success', 'Ticket resolved and user notified via email.');
+    }
+
+    /**
+     * Return latest ticket notifications for admin (polled by frontend).
+     */
+    public function ticketNotifications()
+    {
+        $count = (int) Cache::get('admin_new_tickets', 0);
+        $tickets = SupportTicket::with('user')->latest()->limit(5)->get()->map(function ($t) {
+            return [
+                'id' => $t->id,
+                'ticket_number' => $t->ticket_number,
+                'subject' => $t->subject,
+                'user_name' => $t->user->name ?? 'Guest',
+                'created_at' => $t->created_at->toDateTimeString(),
+                'url' => route('admin.tickets.show', $t),
+            ];
+        });
+
+        return response()->json(['success' => true, 'count' => $count, 'tickets' => $tickets]);
+    }
+
+    /**
+     * Mark admin notifications as read (clears the cache counter).
+     */
+    public function markNotificationsRead()
+    {
+        try {
+            Cache::forget('admin_new_tickets');
+        } catch (\Exception $e) {
+            \Log::warning('Failed to clear admin_new_tickets cache: '.$e->getMessage());
+        }
+
+        return response()->json(['success' => true]);
     }
 }

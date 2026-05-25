@@ -41,9 +41,8 @@ class AuthController extends Controller
         if ($user && isset($user->role) && $user->role === 'admin') {
             Auth::login($user, $request->boolean('remember'));
             $request->session()->regenerate();
-            Log::info('[AUTH] Admin login - OTP bypassed for: '.$credentials['email']);
 
-            return redirect()->intended(url('/dashboard'));
+            return redirect()->intended(url('/admin'));
         }
 
         // Generate OTP
@@ -62,7 +61,7 @@ class AuthController extends Controller
         $request->session()->put('otp_remember', $request->boolean('remember'));
         $request->session()->save();
 
-        Log::info('[OTP] Generated OTP for email: '.$credentials['email']);
+        // OTP generated and emailed to user
 
         return redirect()->route('otp.show');
     }
@@ -71,8 +70,6 @@ class AuthController extends Controller
     public function showOtp()
     {
         if (! session('otp_email')) {
-            Log::warning('[OTP] Session missing otp_email, redirecting to login');
-
             return redirect()->route('login');
         }
 
@@ -110,7 +107,11 @@ class AuthController extends Controller
         $request->session()->regenerate();
         $request->session()->forget(['otp_email', 'otp_remember']);
 
-        return redirect()->route('home')->with('success', __('messages.auth_welcome_back'));
+        if ($user && isset($user->role) && $user->role === 'admin') {
+            return redirect()->intended(url('/admin'))->with('success', __('messages.auth_welcome_back'));
+        }
+
+        return redirect()->intended(url('/dashboard'))->with('success', __('messages.auth_welcome_back'));
     }
 
     // Resend OTP
@@ -176,11 +177,15 @@ class AuthController extends Controller
             'password' => Hash::make($validated['password']),
         ]);
 
-        Log::info('[REGISTER] New user registered: '.$validated['email']);
+        // New user registered
 
         Auth::login($user);
 
-        return redirect()->route('home')->with('success', __('messages.auth_register_success'));
+        if ($user && isset($user->role) && $user->role === 'admin') {
+            return redirect()->intended(url('/admin'))->with('success', __('messages.auth_register_success'));
+        }
+
+        return redirect()->intended(url('/dashboard'))->with('success', __('messages.auth_register_success'));
     }
 
     public function logout(Request $request)
@@ -218,7 +223,7 @@ class AuthController extends Controller
                 'google_id' => $googleUser->getId(),
                 'avatar' => $googleUser->getAvatar(),
             ]);
-            Log::info('[GOOGLE] Existing user logged in: '.$googleUser->getEmail());
+            // Existing user logged in via Google
         } else {
             $user = User::create([
                 'name' => $googleUser->getName(),
@@ -228,11 +233,15 @@ class AuthController extends Controller
                 'password' => Hash::make(Str::random(32)),
                 'password_set' => false,
             ]);
-            Log::info('[GOOGLE] New user created: '.$googleUser->getEmail());
+            // New user created via Google OAuth
         }
 
         Auth::login($user, true);
 
-        return redirect()->route('home')->with('success', 'Welcome, '.$user->name.'!');
+        if ($user && isset($user->role) && $user->role === 'admin') {
+            return redirect()->intended(url('/admin'))->with('success', 'Welcome, '.$user->name.'!');
+        }
+
+        return redirect()->intended(url('/dashboard'))->with('success', 'Welcome, '.$user->name.'!');
     }
 }

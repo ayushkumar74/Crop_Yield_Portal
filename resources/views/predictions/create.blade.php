@@ -5,7 +5,7 @@
 <div class="page-wrapper">
 
     {{-- Page Header --}}
-    <div class="mb-6">
+    <div class="mb-4">
         <p class="section-label">{{ __('messages.predict_ai_powered') }}</p>
         <h1 class="text-2xl font-bold text-gray-900 dark:text-white mb-1">{{ __('messages.predict_title') }}</h1>
         <p class="text-sm text-gray-500 dark:text-gray-400">{{ __('messages.predict_subtitle') }}</p>
@@ -31,10 +31,10 @@
     <form action="{{ route('predictions.store') }}" method="POST" id="prediction-form">
         @csrf
         <input type="hidden" name="crop_name" id="crop-name-hidden" value="">
-        <div class="grid lg:grid-cols-3 gap-4">
+        <div class="grid lg:grid-cols-3 gap-3">
 
             {{-- ── Left Column ─────────────────────────────────────────────────── --}}
-            <div class="lg:col-span-2 space-y-4">
+            <div class="lg:col-span-2 space-y-3">
 
                 {{-- Crop Selection --}}
                 <div class="stat-card">
@@ -46,7 +46,7 @@
                     </h2>
 
                     {{-- Search Crop Input --}}
-                    <div class="relative mb-3.5">
+                    <div class="relative mb-3.5" id="crop-search-container">
                         <div class="relative">
                             <span class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
                                 <svg class="h-4 w-4 text-gray-400 dark:text-gray-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -63,11 +63,6 @@
                                 </svg>
                             </button>
                         </div>
-                        
-                        {{-- Autocomplete Dropdown suggestions --}}
-                        <ul id="crop-suggestions-list"
-                            class="absolute z-50 left-0 right-0 mt-1 bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-md shadow-lg max-h-60 overflow-y-auto hidden text-sm transition-all duration-200">
-                        </ul>
                     </div>
 
                     <div class="grid grid-cols-2 sm:grid-cols-3 gap-2" id="crop-grid">
@@ -103,6 +98,13 @@
                     @error('crop_id')
                         <p class="mt-2 text-xs text-red-500">{{ $message }}</p>
                     @enderror
+                </div>
+
+                {{-- Floating Autocomplete Dropdown Container --}}
+                <div id="floating-dropdown" class="floating-dropdown-container">
+                    <ul id="crop-suggestions-list"
+                        class="bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-md max-h-80 overflow-y-auto overflow-x-hidden hidden text-sm transition-all duration-200 will-change-transform">
+                    </ul>
                 </div>
 
                 {{-- Weather Conditions --}}
@@ -259,7 +261,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
         try {
             const params = new URLSearchParams({ crop_id: cropId, crop_name: cropName, temperature: temp, rainfall: rain, humidity: hum, month });
-            const res = await fetch(`/api/crop-season-check?${params.toString()}`);
+            const res = await fetch(`/api/crop-season-check?${params.toString()}`, { credentials: 'same-origin' });
             const data = await res.json();
 
             if (data.warning) {
@@ -268,15 +270,17 @@ document.addEventListener('DOMContentLoaded', () => {
                 if (!banner) {
                     banner = document.createElement('div');
                     banner.id = 'season-warning-banner';
-                        banner.className = 'mb-4 p-3 rounded border border-amber-200 bg-amber-50 text-amber-800';
-                        const container = form.querySelector('.stat-card') || form;
-                        container.parentNode.insertBefore(banner, container);
-                    }
-                    banner.innerHTML = `<strong>⚠️ {{ app()->getLocale() == 'hi' ? '⚠️ मौसमी चेतावनी:' : '⚠️ Seasonal warning:' }}</strong> <div class="text-sm mt-1">${data.message}</div>
-                        <div class="mt-3 flex gap-2">
-                            <button id="season-continue" type="button" class="btn-primary px-3 py-1 text-sm">{{ app()->getLocale() == 'hi' ? 'जारी रखें' : 'Continue Anyway' }}</button>
-                            <button id="season-cancel" type="button" class="btn-secondary px-3 py-1 text-sm">{{ app()->getLocale() == 'hi' ? 'रद्द करें' : 'Cancel' }}</button>
-                        </div>`;
+                    banner.className = 'mb-4 p-3 rounded border border-amber-200 bg-amber-50 text-amber-800';
+                    const container = form.querySelector('.stat-card') || form;
+                    container.parentNode.insertBefore(banner, container);
+                }
+                // Ensure existing placeholder banner is visible and has expected styling
+                banner.className = 'mb-4 p-3 rounded border border-amber-200 bg-amber-50 text-amber-800';
+                banner.innerHTML = `<strong>⚠️ {{ app()->getLocale() == 'hi' ? '⚠️ मौसमी चेतावनी:' : '⚠️ Seasonal warning:' }}</strong> <div class="text-sm mt-1">${data.message}</div>
+                    <div class="mt-3 flex gap-2">
+                        <button id="season-continue" type="button" class="btn-primary px-3 py-1 text-sm">{{ app()->getLocale() == 'hi' ? 'जारी रखें' : 'Continue Anyway' }}</button>
+                        <button id="season-cancel" type="button" class="btn-secondary px-3 py-1 text-sm">{{ app()->getLocale() == 'hi' ? 'रद्द करें' : 'Cancel' }}</button>
+                    </div>`;
 
                 document.getElementById('season-continue')?.addEventListener('click', () => {
                     banner.remove();
@@ -293,7 +297,6 @@ document.addEventListener('DOMContentLoaded', () => {
             }
         } catch (err) {
             // If season check fails, allow proceed gracefully
-            console.error('Season check failed', err);
         }
 
         // No warnings — submit form
@@ -304,66 +307,120 @@ document.addEventListener('DOMContentLoaded', () => {
     const cropSearchInput = document.getElementById('crop-search-input');
     const cropSearchClear = document.getElementById('crop-search-clear');
     const cropSuggestionsList = document.getElementById('crop-suggestions-list');
+    const floatingDropdownContainer = document.getElementById('floating-dropdown');
     const cropGrid = document.getElementById('crop-grid');
     const noCropsFound = document.getElementById('no-crops-found');
     
     let activeSuggestIndex = -1;
     let cropSearchDebounce;
+    let dropdownActive = false;
 
-    // Load centralized Indian crop dataset passed from controller
-    const allIndianCrops = @json($indianCrops ?? []);
+    // Function to position the floating dropdown relative to the search input
+    function positionFloatingDropdown() {
+        if (!cropSearchInput || !floatingDropdownContainer || !cropSuggestionsList) {
+            return;
+        }
 
-    const isHi = document.documentElement.lang?.startsWith('hi');
-    const cropDataset = [];
+        // Only position if dropdown is active/visible
+        if (cropSuggestionsList.classList.contains('hidden')) {
+            return;
+        }
+
+        const rect = cropSearchInput.getBoundingClientRect();
+        const scrollX = window.pageXOffset || document.documentElement.scrollLeft;
+        const scrollY = window.pageYOffset || document.documentElement.scrollTop;
+
+        // Position container just below the input
+        const containerLeft = scrollX + rect.left;
+        const containerTop = scrollY + rect.bottom + 8;
+
+        floatingDropdownContainer.style.left = containerLeft + 'px';
+        floatingDropdownContainer.style.top = containerTop + 'px';
+
+        // Set dropdown width to match input
+        cropSuggestionsList.style.width = rect.width + 'px';
+        cropSuggestionsList.style.minWidth = rect.width + 'px';
+        cropSuggestionsList.style.maxWidth = rect.width + 'px';
+    }
+
+    // Update dropdown position on scroll, resize, and input events
+    function setupDropdownPositioning() {
+        window.addEventListener('scroll', positionFloatingDropdown, true);
+        window.addEventListener('resize', positionFloatingDropdown);
+        cropSearchInput?.addEventListener('input', positionFloatingDropdown);
+    }
+
+    setupDropdownPositioning();
+
+    // Helper: Show dropdown with proper positioning
+    function showDropdown() {
+        cropSuggestionsList.classList.remove('hidden');
+        cropSuggestionsList.classList.add('active');
+        floatingDropdownContainer.classList.add('active');
+        dropdownActive = true;
+        // Position immediately; will be re-positioned on next scroll/resize/input event
+        positionFloatingDropdown();
+    }
+
+    // Helper: Hide dropdown
+    function hideDropdown() {
+        cropSuggestionsList.classList.add('hidden');
+        cropSuggestionsList.classList.remove('active');
+        floatingDropdownContainer.classList.remove('active');
+        dropdownActive = false;
+    }
+
+    // Initialize data structures for crop search
     const seenNames = new Set();
+    let cropDataset = [];
 
-    // 1. Load crops from database (passed via Blade json directive)
+    // 1. Load crops dataset passed from controller (includes persistent DB crops
+    //    and non-persistent dynamic entries from the indian_crops.json file).
     dbCrops.forEach(item => {
         const card = document.querySelector(`.crop-card-label[data-crop-id="${item.id}"]`);
-        
-        seenNames.add(item.nameEn);
-        seenNames.add(item.nameHi);
-        seenNames.add(item.nameTrans);
+
+        const isDynamic = item.isDynamic === true || item.isDynamic === 'true' || !!item.variants;
+
+        // unify names
+        const nameEn = (item.nameEn || '').toLowerCase();
+        const nameHi = (item.nameHi || '').toLowerCase();
+        const nameTrans = (item.nameTrans || '').toLowerCase();
+
+        seenNames.add(nameEn);
+        seenNames.add(nameHi);
+        seenNames.add(nameTrans);
 
         cropDataset.push({
             id: item.id,
-            nameEn: item.nameEn,
-            nameHi: item.nameHi,
-            nameTrans: item.nameTrans,
+            nameEn: nameEn,
+            nameHi: nameHi,
+            nameTrans: nameTrans,
             displayName: item.displayName,
             card: card || null,
-            isDynamic: false,
+            isDynamic: isDynamic,
+            variants: item.variants || [],
             minTemp: item.minTemp,
             maxTemp: item.maxTemp
         });
     });
 
-    // 2. Add predefined crops if they are not already in the database
-    allIndianCrops.forEach(c => {
-        const name = (c.name || '').toString();
-        const keyEn = name.toLowerCase();
-        const keyHi = (c.name_variants && c.name_variants.length) ? c.name_variants[0].toLowerCase() : keyEn;
-        if (!seenNames.has(keyEn) && !seenNames.has(keyHi)) {
-            const displayName = isHi ? (c.name_hi || c.name || keyEn) : (c.name || keyEn);
-
-            seenNames.add(keyEn);
-            seenNames.add(keyHi);
-            seenNames.add(displayName.toLowerCase());
-
-            cropDataset.push({
-                id: null,
-                nameEn: keyEn,
-                nameHi: keyHi,
-                nameTrans: displayName.toLowerCase(),
-                displayName: displayName,
-                card: null,
-                isDynamic: true,
-                rawName: c.name,
-                minTemp: (c.ideal_temperature && c.ideal_temperature.min) ? c.ideal_temperature.min : 15,
-                maxTemp: (c.ideal_temperature && c.ideal_temperature.max) ? c.ideal_temperature.max : 35
-            });
-        }
+    // Build a normalized searchable text for each crop (lowercase, trimmed,
+    // punctuation removed) to guarantee contains-based matching behaves
+    // consistently across DB and dataset entries.
+    function normalizeForSearch(s) {
+        return (s || '').toString().toLowerCase().trim().replace(/[\u200B-\u200D\uFEFF]/g, '').replace(/[\W_]+/g, ' ');
+    }
+    cropDataset.forEach(item => {
+        const parts = [];
+        parts.push(item.nameEn || '');
+        if (item.displayName) parts.push(item.displayName.toString().toLowerCase());
+        if (item.nameHi) parts.push(item.nameHi);
+        if (item.nameTrans) parts.push(item.nameTrans);
+        if (Array.isArray(item.variants)) parts.push(item.variants.join(' '));
+        item.searchText = normalizeForSearch(parts.join(' '));
     });
+
+    // final cropDataset prepared for search
 
     // Delegated pointer handler for suggestions to ensure clicks/taps register
     // We set a short-lived suppression flag to prevent the document-level
@@ -402,7 +459,7 @@ document.addEventListener('DOMContentLoaded', () => {
     function showRecentSearches() {
         const history = getRecentSearches();
         if (history.length === 0) {
-            cropSuggestionsList.classList.add('hidden');
+            hideDropdown();
             cropSuggestionsList.innerHTML = '';
             return;
         }
@@ -428,7 +485,7 @@ document.addEventListener('DOMContentLoaded', () => {
         }).join('');
 
         cropSuggestionsList.innerHTML = html;
-        cropSuggestionsList.classList.remove('hidden');
+        showDropdown();
 
         // Attach click listeners to history items
         cropSuggestionsList.querySelectorAll('li[data-history-id]').forEach(li => {
@@ -445,7 +502,7 @@ document.addEventListener('DOMContentLoaded', () => {
             clearBtn.addEventListener('click', (e) => {
                 e.stopPropagation();
                 localStorage.removeItem('recent_crop_searches');
-                cropSuggestionsList.classList.add('hidden');
+                hideDropdown();
                 cropSuggestionsList.innerHTML = '';
             });
         }
@@ -456,14 +513,59 @@ document.addEventListener('DOMContentLoaded', () => {
         const radioButton = document.querySelector(`input[name="crop_id"][value="${cropId}"]`);
         if (radioButton) {
             selectCropById(cropId, displayName);
-        } else {
-            // It's a non-default crop that was searched before. It should be in our dataset
-            const item = cropDataset.find(c => c.id == cropId);
-            if (item) {
-                createTemporaryCard(item.id, item.nameEn, item.nameHi, item.nameTrans, item.displayName, item.minTemp, item.maxTemp);
+            return;
+        }
+
+        // Find in our unified dataset by id or name
+        let item = cropDataset.find(c => String(c.id) === String(cropId));
+        if (!item && displayName) {
+            const q = displayName.toLowerCase();
+            item = cropDataset.find(c => (c.nameEn || '').includes(q) || (c.displayName || '').toLowerCase() === q || (c.variants || []).some(v => v.includes(q)));
+        }
+
+        if (item) {
+            if (!item.isDynamic) {
+                // If persisted crop exists but not rendered as a card, reveal and select
+                if (item.card) {
+                    item.card.style.display = '';
+                    selectCropById(item.id, item.displayName);
+                } else {
+                    // treat as dynamic fallback selection
+                    document.getElementById('crop-name-hidden').value = item.displayName;
+                    document.querySelectorAll('input[name="crop_id"]')?.forEach(i => i.checked = false);
+                    document.querySelectorAll('.crop-card-label').forEach(card => card.style.display = 'none');
+                    document.querySelectorAll('[data-is-temp-dynamic="true"]').forEach(c => c.remove());
+                    const tempCard = document.createElement('label');
+                    tempCard.className = 'cursor-pointer crop-card-label transition-all duration-300 ease-out';
+                    tempCard.setAttribute('data-is-temp-dynamic', 'true');
+                    const tempRange = (item.minTemp != null && item.minTemp !== '' && item.maxTemp != null && item.maxTemp !== '') ? `${item.minTemp}–${item.maxTemp}°C` : '—';
+                    tempCard.innerHTML = `
+                        <input type="radio" name="_temp_crop_radio" class="sr-only" />
+                        <div class="border border-gray-200 dark:border-gray-600 rounded-md p-2.5 text-center">
+                            <p class="text-xs font-semibold text-gray-700 dark:text-gray-300">${item.displayName}</p>
+                            <p class="text-xs text-gray-400 dark:text-gray-500 mt-0.5">${tempRange}</p>
+                        </div>`;
+                    document.getElementById('crop-grid').insertBefore(tempCard, document.getElementById('crop-grid').firstChild);
+                    cropSearchInput.value = item.displayName;
+                }
             } else {
-                // Fallback: search and find or create via AJAX
-                discoverAndAddCrop(displayName, displayName);
+                // Dynamic dataset entry selected from recent searches
+                document.getElementById('crop-name-hidden').value = item.displayName;
+                document.querySelectorAll('input[name="crop_id"]')?.forEach(i => i.checked = false);
+                document.querySelectorAll('.crop-card-label').forEach(card => card.style.display = 'none');
+                document.querySelectorAll('[data-is-temp-dynamic="true"]').forEach(c => c.remove());
+                const tempCard = document.createElement('label');
+                tempCard.className = 'cursor-pointer crop-card-label transition-all duration-300 ease-out';
+                tempCard.setAttribute('data-is-temp-dynamic', 'true');
+                    const tempRange = (item.minTemp != null && item.minTemp !== '' && item.maxTemp != null && item.maxTemp !== '') ? `${item.minTemp}–${item.maxTemp}°C` : '—';
+                tempCard.innerHTML = `
+                    <input type="radio" name="_temp_crop_radio" class="sr-only" />
+                    <div class="border border-gray-200 dark:border-gray-600 rounded-md p-2.5 text-center">
+                        <p class="text-xs font-semibold text-gray-700 dark:text-gray-300">${item.displayName}</p>
+                        <p class="text-xs text-gray-400 dark:text-gray-500 mt-0.5">${tempRange}</p>
+                    </div>`;
+                document.getElementById('crop-grid').insertBefore(tempCard, document.getElementById('crop-grid').firstChild);
+                cropSearchInput.value = item.displayName;
             }
         }
     };
@@ -479,147 +581,19 @@ document.addEventListener('DOMContentLoaded', () => {
         }
     }
 
-    // Helper: Create temporary crop card element in `#crop-grid`
-    function createTemporaryCard(cropId, nameEn, nameHi, nameTrans, displayName, minTemp, maxTemp) {
-        // Remove previous temporary dynamic cards to prevent clutter
-        // But avoid removing the currently selected persistent default cards unintentionally
-        cropGrid.querySelectorAll('[data-is-temp-dynamic="true"]').forEach(c => c.remove());
+    // Manual creation of temporary cards is disabled. All crop options must be
+    // authoritative database entries. The UI will only surface `dbCrops` items.
 
-        // Dynamically build and append the new crop card to `#crop-grid`
-        const cardLabel = document.createElement('label');
-        cardLabel.className = 'cursor-pointer crop-card-label transition-all duration-300 ease-out';
-        // If cropId is null (non-persisted), create a temporary id and mark the card with the raw name
-        let effectiveId = cropId;
-        if (!effectiveId) {
-            effectiveId = 'temp-' + Date.now();
-            cardLabel.setAttribute('data-temp-name', displayName);
-        }
-        // If a card with same data-crop-id already exists, reuse it instead of appending duplicate
-        const existing = cropGrid.querySelector(`.crop-card-label[data-crop-id="${effectiveId}"]`);
-        if (existing) {
-            // update display text and return selection
-            const existingTitle = existing.querySelector('p.font-semibold');
-            if (existingTitle) existingTitle.textContent = displayName;
-            selectCropById(effectiveId, displayName);
-            return;
-        }
-        cardLabel.setAttribute('data-crop-id', effectiveId);
-        cardLabel.setAttribute('data-crop-name-en', nameEn.toLowerCase());
-        cardLabel.setAttribute('data-crop-name-hi', nameHi.toLowerCase());
-        cardLabel.setAttribute('data-crop-name-translated', nameTrans.toLowerCase());
-        cardLabel.setAttribute('data-is-temp-dynamic', 'true'); // Mark as temporary
+    // Disabled: discoverAndAddCrop removed to prevent client-side creation.
 
-        // radio value: for temporary (non-persisted) cards we keep the value empty
-        const radioValue = (effectiveId && effectiveId.toString().startsWith('temp-')) ? '' : effectiveId;
-        cardLabel.innerHTML = `
-            <input type="radio" name="crop_id" value="${radioValue}" class="peer sr-only">
-            <div class="border border-gray-200 dark:border-gray-600 rounded-md p-2.5 text-center transition-all
-                peer-checked:border-green-500 peer-checked:bg-green-50 dark:peer-checked:bg-green-900/20
-                hover:border-gray-300 dark:hover:border-gray-500">
-                <p class="text-xs font-semibold text-gray-700 dark:text-gray-300 peer-checked:text-green-700 dark:peer-checked:text-green-400">${displayName}</p>
-                <p class="text-xs text-gray-400 dark:text-gray-500 mt-0.5">${minTemp}–${maxTemp}°C</p>
-            </div>
-        `;
-
-        cropGrid.appendChild(cardLabel);
-
-        // Add manual click event listener to the newly generated card
-        cardLabel.addEventListener('click', () => {
-            selectCropById(effectiveId, displayName);
-        });
-
-        // Trigger selection
-        selectCropById(effectiveId, displayName);
-    }
-
-    // Helper: Discover & Add new crop to DB on-demand via AJAX
-    function discoverAndAddCrop(rawName, displayName) {
-        if (!cropSearchInput || !cropSearchClear) return;
-        
-        // Show inline loading spinner inside the clear/status button
-        cropSearchClear.innerHTML = '<span class="animate-spin text-sm block">⏳</span>';
-        cropSearchClear.classList.remove('hidden');
-        cropSearchInput.setAttribute('disabled', 'true');
-        
-        const csrfToken = document.querySelector('meta[name="csrf-token"]')?.getAttribute('content');
-
-        fetch('{{ route('api.crops.find_or_create') }}', {
-            method: 'POST',
-            headers: {
-                'Content-Type': 'application/json',
-                'X-CSRF-TOKEN': csrfToken,
-                'Accept': 'application/json'
-            },
-            body: JSON.stringify({ name: rawName })
-        })
-        .then(res => {
-            if (!res.ok) throw new Error('API creation failed');
-            return res.json();
-        })
-        .then(data => {
-            // Restore clear button icon and enable input
-            cropSearchClear.innerHTML = `<svg class="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/></svg>`;
-            cropSearchInput.removeAttribute('disabled');
-
-            if (data.success) {
-                const keyEn = data.name.toLowerCase();
-                const keyHi = data.translated_name.toLowerCase();
-                
-                // Add to cropDataset so we don't hit the server again in this session
-                const existing = cropDataset.find(c => c.id == data.id);
-                if (!existing) {
-                    cropDataset.push({
-                        id: data.id,
-                        nameEn: keyEn,
-                        nameHi: keyHi,
-                        nameTrans: keyHi,
-                        displayName: data.translated_name,
-                        card: null,
-                        isDynamic: false,
-                        minTemp: data.min_temp,
-                        maxTemp: data.max_temp
-                    });
-                }
-
-                // Create the temporary card and select it!
-                createTemporaryCard(data.id, keyEn, keyHi, keyHi, data.translated_name, data.min_temp, data.max_temp);
-
-                // Show beautiful sliding toast feedback
-                showDiscoveryToast(data.translated_name);
-            }
-        })
-        .catch(err => {
-            cropSearchClear.innerHTML = `<svg class="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/></svg>`;
-            cropSearchInput.removeAttribute('disabled');
-            console.error(err);
-        });
-    }
-
-    // Helper: Show custom sliding toast notification
-    function showDiscoveryToast(cropName) {
-        let toast = document.getElementById('crop-discovery-toast');
-        if (!toast) {
-            toast = document.createElement('div');
-            toast.id = 'crop-discovery-toast';
-            toast.className = 'fixed bottom-4 right-4 z-50 bg-green-600 dark:bg-green-700 text-white px-4 py-3 rounded-md shadow-lg transform transition-all duration-300 translate-y-10 opacity-0 flex items-center gap-2 text-sm font-medium';
-            document.body.appendChild(toast);
-        }
-        const text = isHi ? `✨ फसल "${cropName}" को सफलतापूर्वक शामिल किया गया!` : `✨ Crop "${cropName}" successfully discovered and added!`;
-        toast.innerHTML = `<span>✅</span> <span>${text}</span>`;
-        
-        setTimeout(() => {
-            toast.classList.remove('translate-y-10', 'opacity-0');
-        }, 10);
-
-        setTimeout(() => {
-            toast.classList.add('translate-y-10', 'opacity-0');
-        }, 3500);
-    }
+    // Discovery toast removed: we do not surface creation feedback in UI anymore.
 
     // Helper: Filter crop cards and generate suggestions
-    function filterCrops() {
+    async function filterCrops() {
         const query = cropSearchInput.value.trim().toLowerCase();
         toggleClearButton();
+
+        // incoming query
 
         if (query.length === 0) {
             // Remove any dynamically added temporary cards
@@ -641,22 +615,39 @@ document.addEventListener('DOMContentLoaded', () => {
             return;
         }
 
-        const matches = [];
-        cropDataset.forEach(item => {
-            const matchEn = item.nameEn.includes(query);
-            const matchHi = item.nameHi.includes(query);
-            const matchTrans = item.nameTrans.includes(query);
+        // As soon as the user types, hide all persisted static crop cards to
+        // ensure the floating suggestions and temporary cards are the primary
+        // visible affordance while searching.
+        document.querySelectorAll('.crop-card-label').forEach(card => card.style.display = 'none');
 
-            if (matchEn || matchHi || matchTrans) {
-                let priority = 0;
-                if (item.nameEn.startsWith(query) || item.nameHi.startsWith(query) || item.nameTrans.startsWith(query)) {
-                    priority = 2; // starts-with matches get higher priority
-                } else {
-                    priority = 1; // contains matches get normal priority
-                }
-                matches.push({ ...item, priority });
+        // Perform authoritative server-side contains search (DB-driven)
+        let matches = [];
+        try {
+            const resp = await fetch('/api/crops/search?query=' + encodeURIComponent(query), {
+                credentials: 'same-origin',
+                headers: { 'Accept': 'application/json' },
+            });
+
+            if (!resp.ok) {
+                matches = [];
+            } else {
+                const json = await resp.json();
+                matches = json.map(d => {
+                    const card = document.querySelector(`.crop-card-label[data-crop-id="${d.id}"]`);
+                    const parts = [];
+                    if (d.nameEn) parts.push(d.nameEn);
+                    if (d.displayName) parts.push(d.displayName.toString().toLowerCase());
+                    if (Array.isArray(d.aliases)) parts.push(d.aliases.join(' '));
+                    const searchText = normalizeForSearch(parts.join(' '));
+                    const priority = searchText.split(' ').some(tok => tok.startsWith(query)) ? 2 : 1;
+                    return { ...d, card: card || null, searchText, priority };
+                });
             }
-        });
+        } catch (e) {
+            // Fail silently in production; no matches
+        }
+
+        // matches retrieved from server
 
         // Sort matches by priority (starts-with first)
         matches.sort((a, b) => b.priority - a.priority);
@@ -666,6 +657,7 @@ document.addEventListener('DOMContentLoaded', () => {
         renderedCards.forEach(card => card.style.display = 'none');
 
         const activeCardMatches = matches.filter(m => m.card !== null);
+        // activeCardMatches length evaluated
         if (activeCardMatches.length > 0) {
             noCropsFound.classList.add('hidden');
             activeCardMatches.forEach(m => {
@@ -677,36 +669,55 @@ document.addEventListener('DOMContentLoaded', () => {
             noCropsFound.classList.add('hidden');
         }
 
+        // If there are matches but none correspond to pre-rendered cards,
+        // render temporary visible cards for the top matches so the grid
+        // always shows something relevant to the user. This does not modify
+        // persistent data and uses the same visual structure as existing cards.
+        document.querySelectorAll('[data-is-temp-dynamic="true"]').forEach(c => c.remove());
+        if (matches.length > 0 && activeCardMatches.length === 0) {
+            // hide all original persisted cards
+            document.querySelectorAll('.crop-card-label').forEach(card => card.style.display = 'none');
+            // create up to 4 temporary cards for immediate visual feedback
+            const maxTemp = 4;
+            matches.slice(0, maxTemp).forEach(item => {
+                const tempCard = document.createElement('label');
+                tempCard.className = 'cursor-pointer crop-card-label transition-all duration-300 ease-out';
+                tempCard.setAttribute('data-is-temp-dynamic', 'true');
+                tempCard.setAttribute('data-crop-id', item.id);
+                tempCard.setAttribute('data-name', item.displayName);
+                const tempRange = (item.minTemp != null && item.minTemp !== '' && item.maxTemp != null && item.maxTemp !== '') ? `${item.minTemp}–${item.maxTemp}°C` : '—';
+                tempCard.innerHTML = `
+                    <input type="radio" name="_temp_crop_radio" class="sr-only" />
+                    <div class="border border-gray-200 dark:border-gray-600 rounded-md p-2.5 text-center hover:border-green-400 dark:hover:border-green-500 transition-colors">
+                        <p class="text-xs font-semibold text-gray-700 dark:text-gray-300">${item.displayName}</p>
+                        <p class="text-xs text-gray-400 dark:text-gray-500 mt-0.5">${tempRange}</p>
+                    </div>`;
+                document.getElementById('crop-grid').insertBefore(tempCard, document.getElementById('crop-grid').firstChild);
+            });
+        }
+
         // Generate suggestions dropdown for length >= 1
         if (query.length >= 1) {
-            let suggestionsHtml = matches.map((m, idx) => {
-                const tag = m.isDynamic ? '✨' : '🌱';
-                const displayId = m.isDynamic ? 'dynamic-' + idx : m.id;
-                const dynamicAttr = m.isDynamic ? `data-is-dynamic="true" data-raw-name="${m.rawName}"` : `data-is-dynamic="false" data-crop-id="${m.id}"`;
-                return `<li class="px-4 py-2.5 text-sm text-gray-700 dark:text-gray-300 hover:bg-green-50 dark:hover:bg-green-900/20 cursor-pointer border-b border-gray-100 dark:border-gray-700/50 last:border-0 transition-colors"
-                            data-index="${idx}" data-name="${m.displayName}" ${dynamicAttr} data-display-id="${displayId}">
-                            ${tag} ${m.displayName} ${m.isDynamic ? '<span class="text-xs text-green-600 dark:text-green-400 ml-1.5">(Discover)</span>' : ''}
+            // Allow both persistent (DB) and dynamic (dataset) matches in the dropdown
+            const persistentMatches = matches.filter(m => true);
+            let suggestionsHtml = persistentMatches.map((m, idx) => {
+                const tag = '🌱';
+                const displayId = m.id;
+                const dynamicAttr = `data-is-dynamic="${m.isDynamic ? 'true' : 'false'}" data-crop-id="${m.id}"`;
+                const tempRange = (m.minTemp != null && m.minTemp !== '' && m.maxTemp != null && m.maxTemp !== '') ? `${m.minTemp}–${m.maxTemp}°C` : '—';
+                return `<li class="px-4 py-2.5 text-sm text-gray-700 dark:text-gray-300 hover:bg-green-50 dark:hover:bg-green-900/20 cursor-pointer border-b border-gray-100 dark:border-gray-700/50 last:border-0 transition-colors flex items-center justify-between"
+                            data-index="${idx}" data-name="${m.displayName}" ${dynamicAttr} data-display-id="${displayId}" data-min-temp="${m.minTemp || ''}" data-max-temp="${m.maxTemp || ''}">
+                            <span>${tag} ${m.displayName}</span>
+                            <span class="text-xs text-gray-400 dark:text-gray-500">${tempRange}</span>
                         </li>`;
             }).join('');
 
-            // If there's no exact match, allow custom discovery of the input query
-            const exactMatchExists = matches.some(m => m.nameEn === query || m.nameHi === query || m.nameTrans === query);
-            if (!exactMatchExists && query.length >= 2) {
-                const addLabel = isHi ? `➕ "${query}" खोजें और जोड़ें` : `➕ Discover and Add "${query}"`;
-                suggestionsHtml += `
-                    <li class="px-4 py-2.5 text-sm text-green-700 dark:text-green-400 hover:bg-green-50 dark:hover:bg-green-900/20 cursor-pointer border-t border-gray-100 dark:border-gray-700/50 transition-colors font-medium"
-                        data-index="${matches.length}" data-name="${query}" data-is-dynamic="true" data-raw-name="${query}" data-display-id="dynamic-custom">
-                        ${addLabel}
-                    </li>
-                `;
-            }
-
             cropSuggestionsList.innerHTML = suggestionsHtml;
-            cropSuggestionsList.classList.remove('hidden');
+            showDropdown();
             
             // No per-item click listeners needed because we use delegated pointerdown above.
         } else {
-            cropSuggestionsList.classList.add('hidden');
+            hideDropdown();
             cropSuggestionsList.innerHTML = '';
         }
         
@@ -717,71 +728,117 @@ document.addEventListener('DOMContentLoaded', () => {
     function handleSelectEvent(li) {
         const isDynamic = li.getAttribute('data-is-dynamic') === 'true';
         const displayName = li.getAttribute('data-name');
-        
-        if (isDynamic) {
-            const rawName = li.getAttribute('data-raw-name');
-            discoverAndAddCrop(rawName, displayName);
-        } else {
-            const cropId = li.getAttribute('data-crop-id');
+        const cropId = li.getAttribute('data-crop-id');
+        const minTemp = li.getAttribute('data-min-temp');
+        const maxTemp = li.getAttribute('data-max-temp');
+
+        if (!isDynamic) {
+            // Persistent crop selected from dropdown
             const radioButton = document.querySelector(`input[name="crop_id"][value="${cropId}"]`);
             if (radioButton) {
+                // Radio button exists in form - use standard selection flow
                 selectCropById(cropId, displayName);
             } else {
-                const item = cropDataset.find(c => c.id == cropId);
-                if (item) {
-                    createTemporaryCard(item.id, item.nameEn, item.nameHi, item.nameTrans, item.displayName, item.minTemp, item.maxTemp);
-                }
+                // Persistent crop from DB but no rendered radio button - treat as temp selection
+                document.getElementById('crop-name-hidden').value = displayName;
+                document.querySelectorAll('input[name="crop_id"]')?.forEach(i => i.checked = false);
+                document.querySelectorAll('.crop-card-label').forEach(card => card.style.display = 'none');
+                document.querySelectorAll('[data-is-temp-dynamic="true"]').forEach(c => c.remove());
+                
+                const tempCard = document.createElement('label');
+                tempCard.className = 'cursor-pointer crop-card-label transition-all duration-300 ease-out';
+                tempCard.setAttribute('data-is-temp-dynamic', 'true');
+                tempCard.setAttribute('data-crop-id', cropId);
+                const tempRange = (minTemp != null && minTemp !== '' && maxTemp != null && maxTemp !== '') ? `${minTemp}–${maxTemp}°C` : '—';
+                tempCard.innerHTML = `
+                    <input type="radio" name="_temp_crop_selected" class="peer sr-only" checked />
+                    <div class="border border-green-500 bg-green-50 dark:bg-green-900/20 rounded-md p-2.5 text-center peer-checked:border-green-500 peer-checked:bg-green-50 dark:peer-checked:bg-green-900/20">
+                        <p class="text-xs font-semibold text-green-700 dark:text-green-400">${displayName}</p>
+                        <p class="text-xs text-gray-400 dark:text-gray-500 mt-0.5">${tempRange}</p>
+                    </div>`;
+                document.getElementById('crop-grid').insertBefore(tempCard, document.getElementById('crop-grid').firstChild);
             }
-        }
-    }
-
-    // Helper: Select crop by ID
-    function selectCropById(cropId, displayName) {
-        const radioButton = document.querySelector(`input[name="crop_id"][value="${cropId}"]`);
-        let cardLabel = null;
-
-        if (radioButton) {
-            radioButton.checked = true;
-            radioButton.dispatchEvent(new Event('change'));
-            radioButton.dispatchEvent(new Event('input'));
-            cardLabel = radioButton.closest('.crop-card-label');
-            // Clear hidden crop_name because a persisted crop was selected
-            document.getElementById('crop-name-hidden').value = '';
-        } else {
-            // Try to find label by data-crop-id for temporary cards
-            cardLabel = document.querySelector(`.crop-card-label[data-crop-id="${cropId}"]`);
-            if (cardLabel) {
-                // For temp cards, populate the hidden crop_name for server-side creation on submit
-                const tempName = cardLabel.getAttribute('data-temp-name') || displayName || '';
-                document.getElementById('crop-name-hidden').value = tempName;
-                const radio = cardLabel.querySelector('input[name="crop_id"]');
-                if (radio) {
-                    radio.checked = true;
-                }
-            }
-        }
-
-        if (cardLabel) {
-            // Core requirement: "ONLY the selected crop card should appear in the crop cards section temporarily."
-            document.querySelectorAll('.crop-card-label').forEach(card => {
-                if (card === cardLabel) {
-                    card.style.display = '';
-                } else {
-                    card.style.display = 'none';
-                }
-            });
-
-            cardLabel.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
-
             cropSearchInput.value = displayName;
             cropSuggestionsList.classList.add('hidden');
             activeSuggestIndex = -1;
             toggleClearButton();
             noCropsFound.classList.add('hidden');
-
-            // Save to recent searches
-            saveToRecentSearches(cropId, displayName);
+            return;
         }
+
+        // Dynamic dataset-only crop selected: set the hidden crop_name
+        document.getElementById('crop-name-hidden').value = displayName;
+        // Clear any selected persisted crop id
+        document.querySelectorAll('input[name="crop_id"]')?.forEach(i => i.checked = false);
+
+        // Hide existing persistent cards
+        document.querySelectorAll('.crop-card-label').forEach(card => card.style.display = 'none');
+        // Remove any previous temp dynamic cards
+        document.querySelectorAll('[data-is-temp-dynamic="true"]').forEach(c => c.remove());
+        
+        // Create a temporary card element with a checked radio button
+        const tempCard = document.createElement('label');
+        tempCard.className = 'cursor-pointer crop-card-label transition-all duration-300 ease-out';
+        tempCard.setAttribute('data-is-temp-dynamic', 'true');
+        tempCard.setAttribute('data-crop-id', cropId);
+        const tempRange = (minTemp != null && minTemp !== '' && maxTemp != null && maxTemp !== '') ? `${minTemp}–${maxTemp}°C` : '—';
+        tempCard.innerHTML = `
+            <input type="radio" name="_temp_crop_selected" class="peer sr-only" checked />
+            <div class="border border-green-500 bg-green-50 dark:bg-green-900/20 rounded-md p-2.5 text-center peer-checked:border-green-500 peer-checked:bg-green-50 dark:peer-checked:bg-green-900/20">
+                <p class="text-xs font-semibold text-green-700 dark:text-green-400">${displayName}</p>
+                <p class="text-xs text-gray-400 dark:text-gray-500 mt-0.5">${tempRange}</p>
+            </div>`;
+        document.getElementById('crop-grid').insertBefore(tempCard, document.getElementById('crop-grid').firstChild);
+
+        cropSearchInput.value = displayName;
+        cropSuggestionsList.classList.add('hidden');
+        activeSuggestIndex = -1;
+        toggleClearButton();
+        noCropsFound.classList.add('hidden');
+    }
+
+    // Helper: Select crop by ID
+    function selectCropById(cropId, displayName) {
+        // Clear any temp dynamic cards first
+        document.querySelectorAll('[data-is-temp-dynamic="true"]').forEach(c => c.remove());
+        
+        // Find the radio button for this crop
+        const radioButton = document.querySelector(`input[name="crop_id"][value="${cropId}"]`);
+        if (!radioButton) return;
+
+        // Check the radio button and dispatch events
+        radioButton.checked = true;
+        radioButton.dispatchEvent(new Event('change'));
+        radioButton.dispatchEvent(new Event('input'));
+
+        // Get the card label containing this radio button
+        const cardLabel = radioButton.closest('.crop-card-label');
+        if (!cardLabel) return;
+
+        // Populate hidden crop_name with the selected display name
+        document.getElementById('crop-name-hidden').value = displayName;
+
+        // Hide all other cards, show only selected card
+        document.querySelectorAll('.crop-card-label').forEach(card => {
+            if (card === cardLabel) {
+                card.style.display = '';
+            } else {
+                card.style.display = 'none';
+            }
+        });
+
+        // Scroll to selected card
+        cardLabel.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+
+        // Update UI state
+        cropSearchInput.value = displayName;
+        hideDropdown();
+        activeSuggestIndex = -1;
+        toggleClearButton();
+        noCropsFound.classList.add('hidden');
+
+        // Save to recent searches
+        if (cropId) saveToRecentSearches(cropId, displayName);
     }
 
     // Debounced search on typing
@@ -801,7 +858,7 @@ document.addEventListener('DOMContentLoaded', () => {
     // Keyboard navigation inside Suggestions Dropdown
     cropSearchInput.addEventListener('keydown', (e) => {
         const items = cropSuggestionsList.querySelectorAll('li');
-        if (cropSuggestionsList.classList.contains('hidden') || items.length === 0) {
+        if (!floatingDropdownContainer.classList.contains('active') || items.length === 0) {
             return;
         }
 
@@ -821,7 +878,7 @@ document.addEventListener('DOMContentLoaded', () => {
                 handleSelectEvent(items[0]);
             }
         } else if (e.key === 'Escape') {
-            cropSuggestionsList.classList.add('hidden');
+            hideDropdown();
             activeSuggestIndex = -1;
         }
     });
@@ -840,10 +897,15 @@ document.addEventListener('DOMContentLoaded', () => {
     // Close crop suggestions when clicking outside. Respect suppression flag
     // set while a pointerdown originated inside the suggestions list (prevents
     // the blur-before-click race on some devices/browsers).
-    document.addEventListener('click', (e) => {
+    // Close crop suggestions when clicking/tapping outside. Use pointerdown
+    // to avoid blur-before-click race; respect suppression flag set during
+    // pointer interactions inside the suggestions list.
+    document.addEventListener('pointerdown', (e) => {
         if (window._suppressSuggestHide) return;
-        if (!cropSearchInput.contains(e.target) && !cropSuggestionsList.contains(e.target)) {
-            cropSuggestionsList.classList.add('hidden');
+        // If dropdown not active, nothing to do
+        if (!dropdownActive) return;
+        if (!cropSearchInput.contains(e.target) && !cropSuggestionsList.contains(e.target) && !floatingDropdownContainer.contains(e.target)) {
+            hideDropdown();
             activeSuggestIndex = -1;
         }
     });
@@ -852,20 +914,45 @@ document.addEventListener('DOMContentLoaded', () => {
     cropSearchInput.addEventListener('focus', () => {
         if (cropSearchInput.value.trim().length > 0) {
             if (cropSuggestionsList.innerHTML !== '') {
-                cropSuggestionsList.classList.remove('hidden');
+                showDropdown();
             }
         } else {
             showRecentSearches();
         }
     });
 
-    // Sync search input if user clicks a crop card manually
-    document.querySelectorAll('.crop-card-label').forEach(card => {
-        card.addEventListener('click', () => {
-            const displayName = card.querySelector('p.font-semibold').textContent;
-            const cropId = card.querySelector('input[type="radio"]').value;
+    // Delegate click handler on crop grid so dynamically added/temp cards are clickable
+    cropGrid.addEventListener('click', (e) => {
+        const card = e.target.closest('.crop-card-label');
+        if (!card) return;
+
+        const displayEl = card.querySelector('p.font-semibold');
+        const displayName = displayEl ? displayEl.textContent.trim() : '';
+
+        // If card was created as a temp dynamic card, it won't have a persisted crop_id
+        if (card.getAttribute('data-is-temp-dynamic') === 'true') {
+            // This is a dynamic crop card — ensure it stays selected
+            document.getElementById('crop-name-hidden').value = displayName;
+            document.querySelectorAll('input[name="crop_id"]')?.forEach(i => i.checked = false);
+            document.querySelectorAll('[data-is-temp-dynamic="true"]').forEach(c => {
+                if (c !== card) c.style.display = 'none';
+            });
+            document.querySelectorAll('.crop-card-label:not([data-is-temp-dynamic="true"])').forEach(c => c.style.display = 'none');
+            card.style.display = '';
+            cropSearchInput.value = displayName;
+            hideDropdown();
+            activeSuggestIndex = -1;
+            toggleClearButton();
+            noCropsFound.classList.add('hidden');
+            return;
+        }
+
+        // Persisted card clicked — determine crop id from the radio input
+        const radio = card.querySelector('input[type="radio"][name="crop_id"]');
+        if (radio) {
+            const cropId = radio.value;
             selectCropById(cropId, displayName);
-        });
+        }
     });
 
     // Initial sync on page load/validation error/old input value

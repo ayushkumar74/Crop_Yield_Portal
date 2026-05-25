@@ -12,6 +12,8 @@ class Crop extends Model
 
     protected $fillable = [
         'name',
+        'aliases',
+        'season',
         'min_temp',
         'max_temp',
         'min_rainfall',

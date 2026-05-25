@@ -142,7 +142,7 @@ async function syncLocationToDatabase(latitude, longitude, locationName, permiss
             document.querySelector('meta[name="user-location-permission"]')?.setAttribute('content', permissionGranted ? 'granted' : 'prompt');
         }
     } catch (e) {
-        console.error('Failed to sync location to database:', e);
+        // Failed to sync location to database — silently continue in production
     }
 }
 

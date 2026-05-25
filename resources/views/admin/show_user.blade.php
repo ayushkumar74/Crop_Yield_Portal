@@ -2,7 +2,7 @@
 @section('title', 'User Details: ' . $user->name . ' — Admin')
 
 @section('content')
-<div class="page-wrapper max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+<div class="page-wrapper max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
 
     {{-- Breadcrumb and Page Header --}}
     <div class="flex items-center justify-between mb-6 flex-wrap gap-3">

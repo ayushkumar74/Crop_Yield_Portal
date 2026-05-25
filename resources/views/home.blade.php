@@ -6,7 +6,7 @@
 
 {{-- ─── Hero ─────────────────────────────────────────────────────────────── --}}
 <section class="hero-section">
-    <div class="max-w-7xl mx-auto px-6 py-12 lg:py-14">
+    <div class="max-w-6xl mx-auto px-6 py-12 lg:py-14">
         <div class="grid lg:grid-cols-2 gap-10 items-center">
 
             {{-- Left: Text --}}
@@ -128,7 +128,7 @@
 
 {{-- ─── Features ─────────────────────────────────────────────────────────── --}}
 <section class="py-12 bg-gray-50 dark:bg-gray-800/30 border-b border-gray-100 dark:border-gray-800">
-    <div class="max-w-7xl mx-auto px-6">
+    <div class="max-w-6xl mx-auto px-6">
         <div class="text-center mb-10">
             <p class="section-label">{{ __('messages.why_choose_us') }}</p>
             <h2 class="text-3xl font-bold text-gray-900 dark:text-white mb-3">{{ __('messages.built_for_modern_agri') }}</h2>
@@ -162,7 +162,7 @@
 
 {{-- ─── How It Works ─────────────────────────────────────────────────────── --}}
 <section class="py-20">
-    <div class="max-w-7xl mx-auto px-6">
+    <div class="max-w-6xl mx-auto px-6">
         <div class="text-center mb-14">
             <p class="section-label">{{ __('messages.how_it_works') }}</p>
             <h2 class="text-3xl font-bold text-gray-900 dark:text-white">{{ __('messages.how_it_works') }}</h2>
@@ -191,7 +191,7 @@
 @auth
 @if($recentPredictions->count() > 0)
 <section class="py-14 bg-gray-50 dark:bg-gray-800/30 border-t border-gray-100 dark:border-gray-800">
-    <div class="max-w-7xl mx-auto px-6">
+    <div class="max-w-6xl mx-auto px-6">
         <div class="flex items-center justify-between mb-8">
             <div>
                 <p class="section-label">{{ __('messages.live_activity') }}</p>

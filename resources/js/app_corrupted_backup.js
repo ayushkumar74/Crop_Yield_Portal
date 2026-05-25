@@ -110,13 +110,7 @@ function saveCoordsAndPermission(latitude, longitude, accuracy = null) {
     localStorage.setItem(GEOLOCATION_COORDS_KEY, JSON.stringify({ latitude, longitude, accuracy }));
     localStorage.setItem(GEOLOCATION_TIMESTAMP_KEY, Date.now().toString());
     
-    // Debug logging
-    console.log('%c[GPS] Coordinates Saved:', 'color: #00AA00; font-weight: bold;', {
-        latitude: latitude.toFixed(6),
-        longitude: longitude.toFixed(6),
-        accuracy: accuracy ? accuracy.toFixed(2) + 'm' : 'unknown',
-        timestamp: new Date().toISOString()
-    });
+    // Coordinates saved (silent in production)
 }
 
 /**
@@ -196,17 +190,11 @@ async function autoDetectWeatherOnPageLoad() {
     // 2. If permission is granted (browser state or database state), auto-fetch fresh live coordinates silently
     if (browserPermission === 'granted' || metaPermission === 'granted' || isGeolocationPermissionGranted()) {
         showAutoDetectSpinner();
-        console.log('%c[GPS] Requesting live coordinates with high accuracy...', 'color: #0099FF; font-weight: bold;');
         navigator.geolocation.getCurrentPosition(
             (position) => {
                 const { latitude, longitude, accuracy } = position.coords;
 
-                console.log('%c[GPS] Location Received:', 'color: #00AA00; font-weight: bold;', {
-                    latitude: latitude.toFixed(6),
-                    longitude: longitude.toFixed(6),
-                    accuracy: accuracy.toFixed(2) + 'm',
-                    timestamp: new Date().toISOString()
-                });
+                // Location received (silent in production)
 
                 // Reject low-accuracy coordinates
                 if (accuracy > 1000) {
@@ -221,13 +209,13 @@ async function autoDetectWeatherOnPageLoad() {
                     showToast(warningMsg, 'warning');
                     // Fallback to database coordinates
                     if (metaLat && metaLon && metaLat !== '' && metaLon !== '') {
-                        console.log('%c[GPS] Falling back to database coordinates', 'color: #FF9900;');
+                        // Fallback to database coordinates
                         fetchWeatherByCoords(parseFloat(metaLat), parseFloat(metaLon), true);
                     }
                     return;
                 }
 
-                console.log('%c[GPS] ✅ ACCEPTED: accuracy within threshold', 'color: #00AA00;');
+                // Accepted accuracy within threshold
                 saveCoordsAndPermission(latitude, longitude, accuracy);
                 showAutoDetectionBadge();
                 fetchWeatherByCoords(latitude, longitude, true);
@@ -274,18 +262,13 @@ async function autoDetectWeatherOnPageLoad() {
 
         // actively request high-accuracy position to trigger the browser permission prompt
         showAutoDetectSpinner();
-        console.log('%c[GPS] First-time prompt: Requesting high-accuracy position...', 'color: #0099FF; font-weight: bold;');
+        // First-time prompt: requesting high-accuracy position
         navigator.geolocation.getCurrentPosition(
             (position) => {
                 hideAutoDetectSpinner();
                 const { latitude, longitude, accuracy } = position.coords;
                 
-                console.log('%c[GPS] First-time Location Received:', 'color: #00AA00; font-weight: bold;', {
-                    latitude: latitude.toFixed(6),
-                    longitude: longitude.toFixed(6),
-                    accuracy: accuracy.toFixed(2) + 'm',
-                    timestamp: new Date().toISOString()
-                });
+                // First-time location received (silent in production)
 
                 // Reject low-accuracy coordinates even on first prompt
                 if (accuracy > 1000) {
@@ -299,7 +282,7 @@ async function autoDetectWeatherOnPageLoad() {
                     return;
                 }
 
-                console.log('%c[GPS] ✅ ACCEPTED: First-time accuracy within threshold', 'color: #00AA00;');
+                // First-time accuracy accepted
                 saveCoordsAndPermission(latitude, longitude, accuracy);
                 showAutoDetectionBadge();
                 fetchWeatherByCoords(latitude, longitude, true);
@@ -344,19 +327,14 @@ window.fetchWeatherByLocation = function () {
     }
     if (statusEl) statusEl.textContent = document.documentElement.lang === 'hi' ? 'स्थान का पता लगा रहा है...' : 'Detecting location...';
 
-    console.log('%c[GPS] Manual location button clicked - Requesting high-accuracy position...', 'color: #0099FF; font-weight: bold;');
+    // Manual location button clicked
 
     // High accuracy, timeout set to 15 seconds for button-click scenario
     navigator.geolocation.getCurrentPosition(
         (position) => {
             const { latitude, longitude, accuracy } = position.coords;
             
-            console.log('%c[GPS] Manual Location Received:', 'color: #00AA00; font-weight: bold;', {
-                latitude: latitude.toFixed(6),
-                longitude: longitude.toFixed(6),
-                accuracy: accuracy.toFixed(2) + 'm',
-                timestamp: new Date().toISOString()
-            });
+            // Manual location received (silent in production)
 
             // Reject low-accuracy coordinates
             if (accuracy > 1000) {
@@ -375,7 +353,7 @@ window.fetchWeatherByLocation = function () {
                 return;
             }
 
-            console.log('%c[GPS] ✅ ACCEPTED: Manual location accuracy within threshold', 'color: #00AA00;');
+            // Manual location accepted
             saveCoordsAndPermission(latitude, longitude, accuracy);
             showAutoDetectionBadge();
             fetchWeatherByCoords(latitude, longitude);
@@ -692,15 +670,7 @@ window.fetchWeatherByCoords = async function (latitude, longitude, isAuto = fals
     lastWeatherFetchTime = now;
 
     // === FLOW START: GPS ng nsole.log('%cnt-weight: bold;');
-    console.log('%c[FLOW] GPS ng ndering', 'color: #00AA00; font-weight: bold; font-size: 12px;');
-    console.log('%cnt-weight: bold;');
-
-    console.log('%c[STEP 1] GPS Coordinates Received:', 'color: #0099FF; font-weight: bold;', {
-        latitude: latitude.toFixed(6),
-        longitude: longitude.toFixed(6),
-        isAutoDetect: isAuto,
-        timestamp: new Date().toISOString()
-    });
+    // GPS flow steps (silent in production)
 
     const btn = document.getElementById('fetch-weather-btn');
     const statusEl = document.getElementById('weather-status');
@@ -712,22 +682,15 @@ window.fetchWeatherByCoords = async function (latitude, longitude, isAuto = fals
     if (statusEl && !isAuto) statusEl.textContent = 'Loading weather data...';
 
     try {
-        console.log('%c[STEP 2] Calling Weather API...', 'color: #0099FF; font-weight: bold;', { endpoint: '/api/weather?lat=' + latitude + '&lon=' + longitude, refresh: !isAuto ? '1' : '0' });
+        // Calling Weather API
 
         const res = await fetch('/api/weather?lat=' + latitude + '&lon=' + longitude + (!isAuto ? '&refresh=1' : ''));
         const data = await res.json();
 
-        console.log('%c[STEP 2.1] Weather API Response:', 'color: #00AA00; font-weight: bold;', {
-            city: data.city || 'N/A',
-            temperature: data.temperature,
-            rainfall: data.rainfall ?? data.precipitation ?? data.rain,
-            weather_condition: data.weather_condition,
-            success: data.success
-        });
+        // Weather API response received
         if (data.success) {
             // === Location Resolution Complete ===
-            console.log('%c[STEP 3] Reverse Geocoding Result:', 'color: #00AA00; font-weight: bold;', {
-            });
+            // Reverse geocoding result handled (silent in production)
 
             // Store rounded integer values in inputs to mimic real weather UIs
             setFieldValue('temperature', data.temperature !== undefined && data.temperature !== null ? String(Math.round(data.temperature)) : '');
@@ -738,11 +701,7 @@ window.fetchWeatherByCoords = async function (latitude, longitude, isAuto = fals
             }
             setFieldValue('humidity', data.humidity !== undefined && data.humidity !== null ? String(Math.round(data.humidity)) : '');
 
-            console.log('%c[STEP 4] Form Fields Populated:', 'color: #00AA00; font-weight: bold;', {
-                temperature: String(Math.round(data.temperature)) + 'ac',
-                rainfall: String(Math.round(annualRainVal * 10) / 10) + 'mm',
-                humidity: String(Math.round(data.humidity)) + '%'
-            });
+            // Form fields populated
 
             // Proactively sync coordinates and resolved village/city name to the user database
             const metaLat = document.querySelector('meta[name="user-lat"]')?.getAttribute('content');
@@ -760,7 +719,7 @@ window.fetchWeatherByCoords = async function (latitude, longitude, isAuto = fals
                 metaName !== data.city ||
                 metaPermission !== 'granted'
             ) {
-                console.log('%c[STEP 5] Syncing location to database...', 'color: #0099FF; font-weight: bold;');
+                // Syncing location to database
                 syncLocationToDatabase(latitude, longitude, data.city || '', true);
             }
 

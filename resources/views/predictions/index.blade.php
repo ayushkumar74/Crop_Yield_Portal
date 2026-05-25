@@ -21,7 +21,7 @@
             <table class="data-table">
                 <thead>
                     <tr>
-                        <th class="pl-5">#</th>
+                        <th class="pl-4">#</th>
                         <th>{{ __('messages.crop') }}</th>
                         <th class="hidden sm:table-cell">{{ __('messages.weather_conditions') }}</th>
                         <th>{{ __('messages.predicted_yield') }}</th>
@@ -34,7 +34,7 @@
                 <tbody>
                     @foreach($predictions as $pred)
                     <tr>
-                        <td class="pl-5 text-gray-400 text-xs">{{ $pred->id }}</td>
+                        <td class="pl-4 text-gray-400 text-xs">{{ $pred->id }}</td>
                         <td class="font-semibold text-gray-900 dark:text-white">
                             {{ $pred->crop->translated_crop_name ?? '—' }}
                         </td>
@@ -87,7 +87,7 @@
             </table>
         </div>
         @if($predictions->hasPages())
-        <div class="px-5 py-3 border-t border-gray-100 dark:border-gray-700">
+    <div class="px-4 py-3 border-t border-gray-100 dark:border-gray-700">
             {{ $predictions->links() }}
         </div>
         @endif

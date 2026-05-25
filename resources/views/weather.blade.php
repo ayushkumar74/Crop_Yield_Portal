@@ -11,7 +11,7 @@
     </div>
 
     {{-- Location Detect Card --}}
-    <div class="stat-card mb-5">
+    <div class="stat-card mb-4">
         <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
             <div>
                 <p class="font-semibold text-gray-900 dark:text-white text-sm mb-0.5">{{ __('messages.weather_your_current') }}</p>
@@ -62,16 +62,16 @@
     </div>
 
     {{-- Charts --}}
-    <div class="grid lg:grid-cols-2 gap-5 mb-5">
+    <div class="grid lg:grid-cols-2 gap-4 mb-4">
         <div class="stat-card">
             <h3 class="font-semibold text-gray-900 dark:text-white text-sm mb-4">{{ __('messages.weather_temp_by_city') }}</h3>
-            <div class="chart-container" style="height:240px">
+            <div class="chart-container" style="height:200px">
                 <canvas id="tempChart"></canvas>
             </div>
         </div>
         <div class="stat-card">
             <h3 class="font-semibold text-gray-900 dark:text-white text-sm mb-4">{{ __('messages.weather_humidity_rainfall') }}</h3>
-            <div class="chart-container" style="height:240px">
+            <div class="chart-container" style="height:200px">
                 <canvas id="humidityChart"></canvas>
             </div>
         </div>
@@ -79,7 +79,7 @@
 
     {{-- Weather Logs Table --}}
     <div class="stat-card overflow-hidden p-0">
-        <div class="px-5 py-4 border-b border-gray-100 dark:border-gray-700">
+        <div class="px-4 py-3 border-b border-gray-100 dark:border-gray-700">
             <h3 class="font-semibold text-gray-900 dark:text-white text-sm">{{ __('messages.weather_recent_logs') }}</h3>
         </div>
         <div class="overflow-x-auto">
@@ -106,7 +106,7 @@
                         <td class="text-cyan-600 dark:text-cyan-400">{{ $log->rainfall }}mm</td>
                         <td class="hidden sm:table-cell text-gray-500 dark:text-gray-400">{{ $log->wind_speed }} {{ __('messages.weather_km_h') }}</td>
                         <td class="hidden md:table-cell">
-                            <span class="badge bg-blue-50 dark:bg-blue-900/20 text-blue-700 dark:text-blue-400 border-blue-100 dark:border-blue-800">
+                            <span class="badge text-xs">
                                 {{ Lang::has('messages.weather_cond_' . strtolower(str_replace(' ', '_', $log->weather_condition ?? ''))) ? __('messages.weather_cond_' . strtolower(str_replace(' ', '_', $log->weather_condition ?? ''))) : ($log->weather_condition ?? '—') }}
                             </span>
                         </td>

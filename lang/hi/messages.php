@@ -93,6 +93,8 @@ return [
     'predict_instant_notice' => 'आपकी फसल का पूर्वानुमान परिणाम तुरंत दिखाई देगा।',
     'enter_weather_to_suggest' => 'सुझाव देखने के लिए मौसम का डेटा दर्ज करें...',
     'back_to_home' => 'होमपेज पर वापस जाएं',
+    'no_crops_found' => 'कोई फसल नहीं मिली',
+    'continue_anyway' => 'जारी रखें',
 
     // Result/Prediction
     'result_title' => 'पूर्वानुमान परिणाम',

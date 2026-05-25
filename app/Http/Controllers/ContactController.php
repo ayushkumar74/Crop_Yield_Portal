@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use App\Mail\TicketCreatedMail;
 use App\Models\SupportTicket;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Mail;
 use Illuminate\Support\Str;
@@ -31,13 +32,32 @@ class ContactController extends Controller
             'message' => 'required|string|min:10|max:5000',
         ]);
 
+        // Create ticket first to obtain an auto-increment id, then assign a deterministic ticket number based on that id
+        // Use a temporary, unique placeholder for ticket_number so DB NOT NULL constraint is satisfied.
+        $temporaryTicketNumber = 'TEMP-'.time().'-'.Str::upper(Str::random(6));
+
         $ticket = SupportTicket::create([
             'user_id' => auth()->id(),
-            'ticket_number' => $this->generateTicketNumber(),
+            'ticket_number' => $temporaryTicketNumber,
             'subject' => $validated['subject'],
             'message' => $validated['message'],
             'status' => 'open',
         ]);
+
+        // Generate production-style deterministic ticket number using the DB id
+        // New format: CYP-SUP-YYYY-000001 (sequential, deterministic, production-style)
+        $ticket_number = sprintf('CYP-SUP-%s-%06d', date('Y'), $ticket->id);
+        $ticket->ticket_number = $ticket_number;
+        $ticket->save();
+
+        // Ticket created; avoid verbose logging in production
+
+        // Increment admin-facing new-ticket counter (in-cache) for quick admin alerting
+        try {
+            Cache::forever('admin_new_tickets', Cache::get('admin_new_tickets', 0) + 1);
+        } catch (\Exception $e) {
+            Log::warning('Could not update admin_new_tickets cache: '.$e->getMessage());
+        }
 
         // Send confirmation email
         try {
@@ -51,7 +71,12 @@ class ContactController extends Controller
             Log::error('Failed to send ticket confirmation email: '.$e->getMessage());
         }
 
-        return back()->with('success', 'Thank you! Your support ticket has been created. We\'ll get back to you soon. Ticket #: '.$ticket->ticket_number);
+        $flash = "✅ Ticket submitted successfully\n".
+             "Ticket ID: {$ticket->ticket_number}\n".
+             "Our support team will review your request shortly.\n".
+             'A confirmation email has been sent.';
+
+        return back()->with('success', $flash);
     }
 
     /**

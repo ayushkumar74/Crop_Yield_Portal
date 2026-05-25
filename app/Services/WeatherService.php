@@ -247,8 +247,6 @@ class WeatherService
                 return [null, 'unavailable'];
             }
         } catch (Throwable $e) {
-            Log::debug('WeatherService: archive API failed.', ['message' => $e->getMessage()]);
-
             return [null, 'unavailable'];
         }
 
@@ -298,7 +296,7 @@ class WeatherService
                             }
                         }
                     } catch (Throwable $e) {
-                        Log::debug('WeatherService: Google Maps geocode (village fallback) failed.', ['message' => $e->getMessage()]);
+                        // ignore provider fallback failure
                     }
                 }
             }
@@ -307,7 +305,7 @@ class WeatherService
                 return $this->formatLocation($city, is_string($state) ? $state : '');
             }
         } catch (Throwable $e) {
-            Log::debug('WeatherService: Nominatim failed.', ['message' => $e->getMessage()]);
+            // ignore Nominatim failures silently in production
         }
 
         try {
@@ -324,7 +322,7 @@ class WeatherService
                 return $this->formatLocation($city, is_string($state) ? $state : '');
             }
         } catch (Throwable $e) {
-            Log::debug('WeatherService: BigDataCloud failed.', ['message' => $e->getMessage()]);
+            // ignore BigDataCloud failures silently in production
         }
 
         // If Google Maps API key configured, try to fetch place components to prefer larger administrative area
@@ -354,7 +352,7 @@ class WeatherService
                 }
             }
         } catch (Throwable $e) {
-            Log::debug('WeatherService: Google Maps geocode failed.', ['message' => $e->getMessage()]);
+            // ignore Google Maps geocode failures silently in production
         }
 
         return $this->formatLocation('Detected Location', '');

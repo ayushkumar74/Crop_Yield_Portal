@@ -65,11 +65,19 @@
             <p class="font-semibold text-gray-900 dark:text-white text-sm">All Predictions</p>
             <p class="text-xs text-gray-500 dark:text-gray-400 mt-0.5">Browse & manage</p>
         </a>
+        @php $newTickets = cache()->get('admin_new_tickets', 0); @endphp
         <a href="{{ route('admin.tickets') }}" class="stat-card hover:border-emerald-300 dark:hover:border-emerald-700 transition-colors">
             <svg class="w-5 h-5 text-emerald-600 dark:text-emerald-400 mb-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M18 9v3m0 0v3m0-3h3m-3 0h-3m-2-5a4 4 0 11-8 0 4 4 0 018 0zM3 20a6 6 0 0112 0v1H3v-1z"/>
             </svg>
-            <p class="font-semibold text-gray-900 dark:text-white text-sm">Support Tickets</p>
+                <div class="flex items-center gap-2">
+                <p class="font-semibold text-gray-900 dark:text-white text-sm">Support Tickets</p>
+                <span id="admin-ticket-badge">
+                    @if($newTickets > 0)
+                        <span class="text-xs bg-amber-100 text-amber-800 rounded-full px-2 py-0.5">New {{ $newTickets }}</span>
+                    @endif
+                </span>
+            </div>
             <p class="text-xs text-gray-500 dark:text-gray-400 mt-0.5">Manage customer issues</p>
         </a>
     </div>
@@ -139,5 +147,49 @@ new Chart(document.getElementById('riskChart'), {
     options:{ responsive:true, maintainAspectRatio:false,
         plugins:{ legend:{ position:'bottom', labels:{ color:lc, font:{size:10} } } } }
 });
+</script>
+<script>
+(function(){
+    const badgeEl = document.getElementById('admin-ticket-badge');
+    let lastCount = {{ $newTickets }} || 0;
+
+    async function pollNotifications() {
+        try {
+            const res = await fetch('/admin/api/notifications');
+            if (!res.ok) return;
+            const data = await res.json();
+            if (!data.success) return;
+
+            const count = data.count || 0;
+            // Update badge
+            if (count > 0) {
+                badgeEl.innerHTML = `<span class="text-xs bg-amber-100 text-amber-800 rounded-full px-2 py-0.5">New ${count}</span>`;
+            } else {
+                badgeEl.innerHTML = '';
+            }
+
+            // If new tickets arrived since last poll, show toast notifications
+            if (count > lastCount && Array.isArray(data.tickets)) {
+                const newOnes = data.tickets.slice(0, count - lastCount);
+                newOnes.forEach(t => {
+                    const msg = `${t.user_name}: ${t.subject} (${t.ticket_number})`;
+                    // clickable toast
+                    const toast = document.createElement('div');
+                    toast.className = 'toast toast-success';
+                    toast.innerHTML = `<a href="${t.url}" class="text-sm font-medium text-white">✅ New ticket — ${msg}</a>`;
+                    document.body.appendChild(toast);
+                    setTimeout(() => toast.remove(), 6000);
+                });
+            }
+
+            lastCount = count;
+        } catch (e) { /* silent */ }
+    }
+
+    // Start polling every 8 seconds
+    setInterval(pollNotifications, 8000);
+    // Initial poll after short delay
+    setTimeout(pollNotifications, 1500);
+})();
 </script>
 @endpush

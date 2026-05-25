@@ -93,6 +93,8 @@ return [
     'predict_instant_notice' => 'Your prediction result will appear instantly.',
     'enter_weather_to_suggest' => 'Enter weather data to see suggestions...',
     'back_to_home' => 'Back to Home',
+    'no_crops_found' => 'No crops found',
+    'continue_anyway' => 'Continue Anyway',
 
     // Result/Prediction
     'result_title' => 'Prediction Result',

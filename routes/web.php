@@ -10,8 +10,6 @@ use App\Http\Middleware\AdminMiddleware;
 use App\Models\WeatherLog;
 use App\Services\WeatherService;
 use Illuminate\Http\Request;
-use Illuminate\Support\Facades\Http;
-use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Route;
 
 // ─── Basic Routes & Named Routes ────────────────────────────────────
@@ -58,50 +56,7 @@ Route::middleware('auth')->group(function () {
             ->header('X-Data-Source', 'Open-Meteo');
     })->name('api.weather');
 
-    // Debug endpoint: returns raw provider and reverse-geocode responses for diagnostics
-    Route::get('/api/debug-weather', function (Request $request) {
-        try {
-            $lat = $request->query('lat');
-            $lon = $request->query('lon');
-
-            if (! $lat || ! $lon) {
-                return response()->json(['success' => false, 'message' => 'Coordinates missing.'], 400);
-            }
-
-            $open = Http::timeout(12)->get('https://api.open-meteo.com/v1/forecast', [
-                'latitude' => (float) $lat,
-                'longitude' => (float) $lon,
-                'current' => 'temperature_2m,apparent_temperature,relative_humidity_2m,precipitation,rain,showers,precipitation_probability,weather_code,wind_speed_10m,wind_direction_10m',
-                'hourly' => 'temperature_2m,apparent_temperature,relative_humidity_2m,precipitation,precipitation_probability,weather_code,wind_speed_10m,wind_direction_10m',
-                'daily' => 'precipitation_sum,precipitation_probability_max',
-                'timezone' => 'auto',
-                'temperature_unit' => 'celsius',
-                'precipitation_unit' => 'mm',
-                'wind_speed_unit' => 'kmh',
-                'forecast_days' => 2,
-            ]);
-
-            $nominatim = Http::timeout(6)
-                ->withHeaders(['User-Agent' => 'CropYieldPortal/1.0'])
-                ->get('https://nominatim.openstreetmap.org/reverse', [
-                    'lat' => (float) $lat,
-                    'lon' => (float) $lon,
-                    'format' => 'json',
-                    'zoom' => 14,
-                    'addressdetails' => 1,
-                ]);
-
-            return response()->json([
-                'success' => true,
-                'open_meteo' => $open->successful() ? $open->json() : ['status' => $open->status(), 'body' => $open->body()],
-                'nominatim' => $nominatim->successful() ? $nominatim->json() : ['status' => $nominatim->status(), 'body' => $nominatim->body()],
-            ]);
-        } catch (Exception $e) {
-            Log::error('DebugWeather route error: '.$e->getMessage());
-
-            return response()->json(['success' => false, 'message' => 'Error calling providers', 'error' => $e->getMessage()], 500);
-        }
-    })->name('api.debug_weather');
+    // Debug endpoints removed for production
 
     Route::post('/api/user-location', function (Request $request) {
         $request->validate([
@@ -124,6 +79,7 @@ Route::middleware('auth')->group(function () {
 
     // ── JSON Response — Crop Suggestions (auth protected) ──────────
     Route::get('/api/crop-suggestions', [PageController::class, 'cropSuggestions'])->name('api.crop_suggestions');
+    Route::get('/api/crops/search', [PageController::class, 'searchCrops'])->name('api.crops.search');
     Route::post('/api/crops/find-or-create', [PageController::class, 'findOrCreateCrop'])->name('api.crops.find_or_create');
     Route::get('/api/crop-season-check', [PageController::class, 'cropSeasonCheck'])->name('api.crop_season_check');
 
@@ -161,6 +117,9 @@ Route::prefix('admin')
         Route::get('/tickets/{ticket}', [AdminController::class, 'showTicket'])->name('tickets.show');
         Route::patch('/tickets/{ticket}/resolve', [AdminController::class, 'resolveTicket'])->name('tickets.resolve');
         Route::patch('/tickets/{ticket}/status', [AdminController::class, 'updateTicketStatus'])->name('tickets.status');
+        // Admin notification polling endpoints
+        Route::get('/api/notifications', [AdminController::class, 'ticketNotifications'])->name('api.notifications');
+        Route::post('/api/notifications/mark-read', [AdminController::class, 'markNotificationsRead'])->name('api.notifications.mark_read');
     });
 
 // ─── Authentication Routes ────────────────────────────────────────────────────

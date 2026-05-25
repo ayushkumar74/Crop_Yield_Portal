@@ -16,6 +16,12 @@
             </p>
         </div>
 
+        {{-- Success flash after ticket creation --}}
+        @if(session('success'))
+            <div class="mb-6 p-4 bg-emerald-50 dark:bg-emerald-900/20 border border-emerald-200 dark:border-emerald-800 rounded-md">
+                <p class="font-medium text-emerald-700 dark:text-emerald-300 text-sm">{{ session('success') }}</p>
+            </div>
+        @endif
         <div class="grid grid-cols-1 lg:grid-cols-3 gap-6 mb-10">
             
             {{-- Contact Info Cards --}}

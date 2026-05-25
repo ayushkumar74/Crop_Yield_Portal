@@ -74,14 +74,14 @@ class PredictionController extends Controller
         $recentCropIds = session('recent_crops', []);
         $recentCrops = Crop::whereIn('id', $recentCropIds)->get();
 
-        // Load centralized crop dataset for search/autocomplete and season validation
-        $indianCropsPath = resource_path('data/indian_crops.json');
-        $indianCrops = [];
-        if (file_exists($indianCropsPath)) {
-            $indianCrops = json_decode(file_get_contents($indianCropsPath), true) ?: [];
-        }
+        // NOTE: The frontend no longer relies on the resources/data/indian_crops.json
+        // file being merged into the client payload. All crops should be persisted
+        // in the database and served via the API. Ensure $dbCrops contains only
+        // persisted crops (no dynamic merging).
 
-        return view('predictions.create', compact('crops', 'defaultCrops', 'dbCrops', 'recentCrops', 'indianCrops'));
+        // production: do not emit debug logs here
+
+        return view('predictions.create', compact('crops', 'defaultCrops', 'dbCrops', 'recentCrops'));
     }
 
     /**
@@ -111,42 +111,21 @@ class PredictionController extends Controller
         if (empty($validatedCropId) && ! empty($validatedCropName)) {
             $name = $validated['crop_name'];
             // Try to find existing crop by name
-            $crop = Crop::where('name', 'like', $name)->first();
+            $crop = Crop::whereRaw('LOWER(name) = ?', [strtolower($name)])->first();
             if (! $crop) {
-                // Try to find matching predefined attributes from JSON dataset
-                $datasetPath = resource_path('data/indian_crops.json');
-                $matched = null;
-                if (file_exists($datasetPath)) {
-                    $list = json_decode(file_get_contents($datasetPath), true) ?: [];
-                    foreach ($list as $entry) {
-                        if (strcasecmp($entry['name'] ?? '', $name) === 0 || in_array(strtolower($name), array_map('strtolower', $entry['name_variants'] ?? []))) {
-                            $matched = $entry;
-                            break;
-                        }
-                    }
-                }
+                // Try to find by aliases stored in the database
+                $crop = Crop::whereRaw('LOWER(aliases) LIKE ?', ['%'.strtolower($name).'%'])->first();
+            }
 
-                if ($matched) {
-                    $crop = Crop::create([
-                        'name' => $matched['name'] ?? ucfirst($name),
-                        'min_temp' => $matched['ideal_temperature']['min'] ?? 15,
-                        'max_temp' => $matched['ideal_temperature']['max'] ?? 35,
-                        'min_rainfall' => $matched['rainfall']['min'] ?? 400,
-                        'max_rainfall' => $matched['rainfall']['max'] ?? 1500,
-                        'min_humidity' => $matched['humidity']['min'] ?? 30,
-                        'max_humidity' => $matched['humidity']['max'] ?? 90,
-                        'base_yield' => $matched['base_yield'] ?? 5.0,
-                    ]);
-                } else {
-                    // Generic creation for unknown crop names
-                    $crop = Crop::create([
-                        'name' => ucfirst($name),
-                        'min_temp' => 15, 'max_temp' => 35,
-                        'min_rainfall' => 400, 'max_rainfall' => 1200,
-                        'min_humidity' => 40, 'max_humidity' => 80,
-                        'base_yield' => 5.0,
-                    ]);
-                }
+            if (! $crop) {
+                // Generic creation for unknown crop names
+                $crop = Crop::create([
+                    'name' => ucfirst($name),
+                    'min_temp' => 15, 'max_temp' => 35,
+                    'min_rainfall' => 400, 'max_rainfall' => 1200,
+                    'min_humidity' => 40, 'max_humidity' => 80,
+                    'base_yield' => 5.0,
+                ]);
             }
         } else {
             $crop = Crop::findOrFail($validatedCropId);
